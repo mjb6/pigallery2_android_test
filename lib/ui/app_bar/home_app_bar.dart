@@ -50,7 +50,10 @@ class HomeAppBar extends StatelessWidget {
             HomeModel model = Provider.of<HomeModel>(context, listen: false);
             model.startSearch();
             await showSearch(context: context, delegate: GallerySearchDelegate(stackPosition));
-            model.stopSearch();
+            /// transitionDuration of _SearchPageRoute is 300ms
+            Future.delayed(Duration(milliseconds: 300)).then((it) {
+              model.stopSearch();
+            });
           },
           icon: const Icon(Icons.search),
         ),

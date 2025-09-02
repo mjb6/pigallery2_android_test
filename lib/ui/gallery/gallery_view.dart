@@ -70,7 +70,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
           },
           child: Column(
             children: [
-              if (widget.stackPosition == 0 && !context.select<HomeModel, bool>((it) => it.isSearchPending)) const TopPicksView(),
+              if (widget.stackPosition == 0 && !context.select<HomeModel, bool>((it) => it.searchOngoing)) const TopPicksView(),
               Flexible(
                 child: Selector<HomeModel, List<Item>>(
                   selector: (context, model) => model.stateOf(widget.stackPosition).items,
