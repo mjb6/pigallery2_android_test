@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  http: ^1.4.0
+  http: ^1.5.0
   provider: ^6.1.5
 
   shared_preferences: ^2.5.3
@@ -29,8 +29,8 @@ dependencies:
   mutex: ^3.1.0
   mime: ^2.0.0
 
-  dynamic_color: ^1.7.0
-  share_plus: ^11.0.0
+  dynamic_color: ^1.8.1
+  share_plus: ^11.1.0
   motion_photos:
     git:
       url: https://github.com/Lakjdf/motion_photos.git
@@ -51,7 +51,7 @@ dependencies:
   flutter_inappwebview: ^6.1.5
   visibility_detector: ^0.4.0+2
 
-  flutter_spinkit: ^5.2.1
+  flutter_spinkit: ^5.2.2
   ionicons: ^0.2.2
 
 dependency_overrides:

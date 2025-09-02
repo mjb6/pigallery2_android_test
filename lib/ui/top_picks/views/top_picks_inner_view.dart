@@ -20,8 +20,13 @@ class TopPicksInnerView extends StatelessWidget {
     model.topPicksSearch(directory);
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: ((context) => HomeView(1)),
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 200),
+        reverseTransitionDuration: const Duration(milliseconds: 100),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        pageBuilder: ((context, _, _) => HomeView(1)),
       ),
     ).then((value) {
       if (!context.mounted) return;

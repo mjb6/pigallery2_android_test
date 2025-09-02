@@ -15,8 +15,13 @@ class FlattenDirButton extends StatelessWidget {
         model.flattenDir();
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: ((context) => HomeView(model.stackPosition)),
+          PageRouteBuilder(
+            transitionDuration: const Duration(milliseconds: 200),
+            reverseTransitionDuration: const Duration(milliseconds: 100),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            pageBuilder: ((context, _, _) => HomeView(model.stackPosition)),
           ),
         );
       },

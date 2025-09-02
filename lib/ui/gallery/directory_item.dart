@@ -34,11 +34,7 @@ class DirectoryItem extends StatelessWidget {
                   stops: const [0.6, 1.0],
                 ),
               ),
-              child: ThumbnailImage(
-                key: ObjectKey(dir),
-                dir,
-                fit: BoxFit.cover,
-              ),
+              child: ThumbnailImage(key: ObjectKey(dir), dir, fit: BoxFit.cover),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,13 +43,13 @@ class DirectoryItem extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(6.0, 0.0, 6.0, 3.0),
-                  child: Text(dir.name),
+                  child: Text(dir.name, maxLines: 1, overflow: TextOverflow.fade),
                 ),
                 if (showDirectoryItemCount)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(6.0, 0.0, 6.0, 6.0),
                     child: Text(dir.metadata.size.toString()),
-                  )
+                  ),
               ],
             ),
           ],
