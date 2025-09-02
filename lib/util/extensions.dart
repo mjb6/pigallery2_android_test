@@ -41,6 +41,11 @@ extension StringExtension on String {
         .replaceAll(')', '%29')
         .replaceAll('?', '%3F');
   }
+
+  /// https://github.com/dart-lang/sdk/issues/56993#issuecomment-2449804236
+  String decodeUri() {
+    return replaceAllMapped(RegExp(r'(?:%[\da-fA-F]{2})+'), (m) => Uri.decodeComponent(m[0]!));
+  }
 }
 
 extension DurationExtension on Duration {

@@ -23,7 +23,7 @@ class MediaInfoBottomSheet extends StatelessWidget {
             children: [
               ListTile(
                 leading: Icon(Icons.image_outlined),
-                title: Text("/${Uri.decodeComponent(item.relativeApiPath)}"),
+                title: Text("/${item.relativeApiPath.decodeUri()}"),
                 subtitle: Text(item.metadata.size.toHumanReadableFileSize()),
               ),
               ListTile(
