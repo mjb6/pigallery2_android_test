@@ -84,10 +84,16 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
   Widget buildVideo(BuildContext context, VideoController videoController) {
     Size screenSize = MediaQuery.of(context).size;
     Size childSize;
-    if (screenSize.aspectRatio > widget.item.aspectRatio) {
-      childSize = Size(screenSize.height * widget.item.aspectRatio, screenSize.height);
+    // prefer aspectRatio of the player over metadata
+    double aspectRatio = videoController.player.state.videoParams.aspect ?? widget.item.aspectRatio;
+    if (screenSize.aspectRatio > aspectRatio) {
+      childSize = Size(screenSize.height * aspectRatio, screenSize.height);
     } else {
-      childSize = Size(screenSize.width, screenSize.width / widget.item.aspectRatio);
+      childSize = Size(screenSize.width, screenSize.width / aspectRatio);
+    }
+    if (aspectRatio.toStringAsFixed(2) != widget.item.aspectRatio.toStringAsFixed(2)) {
+      // required for the Video widget to update its dimensions; defaults to source metadata
+      videoController.setSize(width: childSize.width.toInt(), height: childSize.height.toInt());
     }
     return Center(
       child: VisibilityDetector(
@@ -98,7 +104,7 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
           key: ValueKey("${widget.item.id}: ${screenSize.hashCode}"),
           controller: videoController,
           fit: BoxFit.contain,
-          aspectRatio: widget.item.aspectRatio,
+          aspectRatio: aspectRatio,
           controls: NoVideoControls,
           width: childSize.width,
           height: childSize.height,
@@ -160,17 +166,19 @@ class VideoViewWidgetBackground extends StatelessWidget {
   Widget buildVideo(BuildContext context, VideoController videoController) {
     Size screenSize = MediaQuery.of(context).size;
     Size childSize;
-    if (screenSize.aspectRatio > item.aspectRatio) {
-      childSize = Size(screenSize.height * item.aspectRatio, screenSize.height);
+    // prefer aspectRatio of the player over metadata
+    double aspectRatio = videoController.player.state.videoParams.aspect ?? item.aspectRatio;
+    if (screenSize.aspectRatio > aspectRatio) {
+      childSize = Size(screenSize.height * aspectRatio, screenSize.height);
     } else {
-      childSize = Size(screenSize.width, screenSize.width / item.aspectRatio);
+      childSize = Size(screenSize.width, screenSize.width / aspectRatio);
     }
     return Center(
       child: Video(
         key: ValueKey("${item.id}: ${screenSize.hashCode} background"),
         controller: videoController,
         fit: BoxFit.contain,
-        aspectRatio: item.aspectRatio,
+        aspectRatio: aspectRatio,
         controls: NoVideoControls,
         width: childSize.width,
         height: childSize.height,
