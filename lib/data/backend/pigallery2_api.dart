@@ -8,6 +8,7 @@ import 'package:pigallery2_android/data/backend/models/directory.dart';
 import 'package:pigallery2_android/data/backend/models/search/search_query.dart';
 import 'package:pigallery2_android/data/backend/models/search/search_result.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
+import 'package:pigallery2_android/util/extensions.dart';
 
 class PiGallery2Api {
   String _getBaseEndpoint(String serverUrl) => '$serverUrl${_settingsModel.apiBasePath}';
@@ -45,7 +46,7 @@ class PiGallery2Api {
     Map<String, String> headers = {};
     if (sessionData != null) {
       headers['Cookie'] = sessionData.sessionCookies;
-      headers['CSRF-Token'] = sessionData.csrfToken;
+      sessionData.csrfToken?.let((it) => headers['CSRF-Token'] = it);
     }
     return headers;
   }
@@ -66,11 +67,12 @@ class PiGallery2Api {
         body: jsonEncode({'loginCredential': credentials.toJson()}));
     Map<String, dynamic> result = json.decode(response.body);
     if (response.statusCode == 200 && result['error'] == null && response.headers.containsKey('set-cookie')) {
+      Map<String, dynamic> bodyResult = json.decode(response.body)['result'];
       return ApiResponse(
         code: 200,
         result: SessionData(
           sessionCookies: _parseCookies(response.headers['set-cookie']!),
-          csrfToken: json.decode(response.body)['result']['csrfToken'],
+          csrfToken: bodyResult.containsKey('csrfToken') ? bodyResult['csrfToken'] : null,
         ),
       );
     } else {

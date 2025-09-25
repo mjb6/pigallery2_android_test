@@ -28,14 +28,16 @@ class StorageHelper {
 
   Future<void> storeSessionData(String url, SessionData data) async {
     await _storage.setWithKey(_getSessionCookiesKey(url), data.sessionCookies);
-    await _storage.setWithKey(_getCsrfTokenKey(url), data.csrfToken);
+    if (data.csrfToken != null) {
+      await _storage.setWithKey(_getCsrfTokenKey(url), data.csrfToken);
+    }
     await _setCookies(url, data.sessionCookies);
   }
 
   SessionData? getSessionData(String url) {
     String? cookies = _storage.getWithKey(_getSessionCookiesKey(url));
     String? token = _storage.getWithKey(_getCsrfTokenKey(url));
-    if (cookies != null && token != null) {
+    if (cookies != null) {
       return SessionData(sessionCookies: cookies, csrfToken: token);
     }
     return null;

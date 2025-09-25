@@ -21,7 +21,7 @@ enum StorageKey<T> {
   apiThumbnailPath<String>("/320"),
   mediaBackgroundMode<MediaBackgroundMode>(MediaBackgroundMode.ambient),
   mediaBackgroundBlur<int>(45),
-  apiVideoPath<String>("/bestfit");
+  apiVideoPath<String>("");
 
   String get key => name;
   final T defaultValue;

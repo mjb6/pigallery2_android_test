@@ -54,10 +54,10 @@ class BackendDirectory extends BackendDirectoryPath {
   }
 
   BackendDirectory.fromJson(super.json, super.parentPath)
-      : mediaCount = json['mediaCount'],
+      : mediaCount = json['mediaCount'] ?? json['cache']['recursiveMediaCount'] ?? json['cache']['mediaCount'],
         lastModified = json['lastModified'],
         directories = _parseDirectories(json, parentPath),
-        cover = _parseCover(json, parentPath),
+        cover = _parseCover(json["cache"] ?? json, parentPath),
         media = _parseMedia(json, parentPath),
         super.fromJson();
 }

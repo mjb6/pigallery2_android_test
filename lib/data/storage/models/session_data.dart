@@ -1,6 +1,6 @@
 class SessionData {
   String sessionCookies;
-  String csrfToken;
+  String? csrfToken;
 
   SessionData({required this.sessionCookies, required this.csrfToken});
 }
