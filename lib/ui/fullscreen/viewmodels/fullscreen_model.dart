@@ -54,12 +54,12 @@ class FullscreenModel extends SafeChangeNotifier {
     notifyListeners();
   }
 
-  @override
-  void dispose() {
+  /// To be invoked whenever the fullscreen view starts to close.
+  /// Clears state of all fullscreen related providers.
+  void close() {
     for (var model in _fullscreenModels) {
       model.close();
     }
-    super.dispose();
   }
 
   /// [Media] item displayed at the current page.

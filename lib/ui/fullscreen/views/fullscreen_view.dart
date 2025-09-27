@@ -42,6 +42,9 @@ class _FullscreenViewState extends State<FullscreenView> {
         });
         final Hero hero = toHeroContext.widget as Hero;
         if (flightDirection == HeroFlightDirection.pop) {
+          // Invoking this here as a workaround since there's no easy way to detect when the route starts to pop.
+          // The user can tap fast enough on another item before the previous fullscreen route is fully popped.
+          context.read<FullscreenModel>().close();
           return AnimatedBuilder(
             animation: animation,
             builder: (context, value) {
