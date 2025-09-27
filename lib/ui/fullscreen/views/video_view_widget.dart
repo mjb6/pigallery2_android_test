@@ -70,14 +70,16 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
     double upperThreshold = 0.5 + threshold;
     if (visibleFraction >= lowerThreshold && visibleFraction <= 0.5) {
       // 0 at lowerThreshold and target at 0.5
-      videoController.player.setVolume((visibleFraction - lowerThreshold) * target / threshold);
+      videoController.player.setVolume((visibleFraction - lowerThreshold) * target / threshold).catchError((_) {});
     } else if (visibleFraction > 0.5 && visibleFraction <= upperThreshold) {
       // target at 0.5 & 100 at upperThreshold
-      videoController.player.setVolume((visibleFraction - 0.5) * (100 - target) / threshold + target);
+      videoController.player
+          .setVolume((visibleFraction - 0.5) * (100 - target) / threshold + target)
+          .catchError((_) {});
     } else if (visibleFraction > upperThreshold) {
-      videoController.player.setVolume(100);
+      videoController.player.setVolume(100).catchError((_) {});
     } else if (visibleFraction < lowerThreshold) {
-      videoController.player.setVolume(0);
+      videoController.player.setVolume(0).catchError((_) {});
     }
   }
 
@@ -91,10 +93,8 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
     } else {
       childSize = Size(screenSize.width, screenSize.width / aspectRatio);
     }
-    if (aspectRatio.toStringAsFixed(2) != widget.item.aspectRatio.toStringAsFixed(2)) {
-      // required for the Video widget to update its dimensions; defaults to source metadata
-      videoController.setSize(width: childSize.width.toInt(), height: childSize.height.toInt());
-    }
+    // required for the Video widget to update its dimensions; defaults to source metadata
+    videoController.setSize(width: childSize.width.toInt(), height: childSize.height.toInt()).catchError((_) => {});
     return Center(
       child: VisibilityDetector(
         key: ValueKey("${widget.item.id}: ${screenSize.hashCode}"),
@@ -117,11 +117,18 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
   }
 
   Widget buildVideoView(BuildContext context, VideoController videoController) {
-    return Stack(
-      children: [
-        VideoViewWidgetBackground(item: widget.item, videoController: videoController),
-        buildVideo(context, videoController),
-      ],
+    return Selector<VideoModel, double>(
+      selector: (context, model) => model.videoScale,
+      builder: (context, scale, child) => Transform.scale(
+        transformHitTests: true,
+        scale: scale,
+        child: Stack(
+          children: [
+            VideoViewWidgetBackground(item: widget.item, videoController: videoController),
+            buildVideo(context, videoController),
+          ],
+        ),
+      ),
     );
   }
 
@@ -137,22 +144,16 @@ class _VideoViewWidgetState extends State<VideoViewWidget> {
     if (error) {
       return const ErrorImage();
     }
-    return FutureBuilder(
-      future: controllerItem.controller.waitUntilFirstFrameRendered,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return buildPlaceholder();
+
+    return ListenableBuilder(
+      listenable: controllerItem,
+      builder: ((context, _) {
+        if (controllerItem.firstFrameRendered) {
+          return buildVideoView(context, controllerItem.controller);
         } else {
-          return Selector<VideoModel, double>(
-            selector: (context, model) => model.videoScale,
-            builder: (context, scale, child) => Transform.scale(
-              transformHitTests: true,
-              scale: scale,
-              child: buildVideoView(context, controllerItem.controller),
-            ),
-          );
+          return buildPlaceholder();
         }
-      },
+      }),
     );
   }
 }

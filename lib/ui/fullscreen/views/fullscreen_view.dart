@@ -29,7 +29,6 @@ class _FullscreenViewState extends State<FullscreenView> {
     double screenWidth = PlatformDispatcher.instance.views.first.physicalSize.width;
     double heightDiff = screenWidth * (item.dimension.height / item.dimension.width) - screenWidth;
     return Hero(
-      // always use thumbnail for hero animation
       flightShuttleBuilder: (
         BuildContext flightContext,
         Animation<double> animation,
@@ -47,7 +46,7 @@ class _FullscreenViewState extends State<FullscreenView> {
           context.read<FullscreenModel>().close();
           return AnimatedBuilder(
             animation: animation,
-            builder: (context, value) {
+            builder: (context, _) {
               // make sure that thumbnail does not expand
               return FittedBox(
                 fit: BoxFit.fitWidth,
