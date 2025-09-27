@@ -47,6 +47,7 @@ class _VideoControlsState extends State<VideoControls> {
   void initState() {
     super.initState();
     controller.errorStream().listen((_) {
+      if (!mounted) return;
       setState(() {});
     });
     controller.player.stream.buffering.listen((event) {

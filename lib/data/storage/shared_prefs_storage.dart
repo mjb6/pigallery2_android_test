@@ -74,4 +74,12 @@ class SharedPrefsStorage {
       return Future.value(false);
     }
   }
+
+  Future<void> remove(String key) async {
+    try {
+      await _prefs.remove(key);
+    } on Exception {
+      return Future.value();
+    }
+  }
 }

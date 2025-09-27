@@ -29,7 +29,7 @@ class StorageHelper {
   Future<void> storeSessionData(String url, SessionData data) async {
     await _storage.setWithKey(_getSessionCookiesKey(url), data.sessionCookies);
     if (data.csrfToken != null) {
-      await _storage.setWithKey(_getCsrfTokenKey(url), data.csrfToken);
+      await _storage.setWithKey(_getCsrfTokenKey(url), data.csrfToken as String);
     }
     await _setCookies(url, data.sessionCookies);
   }
@@ -41,6 +41,11 @@ class StorageHelper {
       return SessionData(sessionCookies: cookies, csrfToken: token);
     }
     return null;
+  }
+
+  Future<void> deleteSessionData(String url) async {
+    await _storage.remove(_getSessionCookiesKey(url));
+    await _storage.remove(_getCsrfTokenKey(url));
   }
 
   /// Set cookies to be used with the in app web view.

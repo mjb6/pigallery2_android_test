@@ -52,6 +52,7 @@ class ServerRepositoryImpl implements ServerRepository {
     await _storage.set(StorageKey.serverUrls, currentServerUrls);
     await _credentialStorage.deleteCredentials(url);
     await _storage.set(StorageKey.selectedServer, selectedServerIndex < 2 ? 0 : selectedServerIndex - 1);
+    await _storageHelper.deleteSessionData(url);
   }
 
   @override
