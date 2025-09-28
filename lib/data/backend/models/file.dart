@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 import 'package:path/path.dart' as p;
-import 'package:pigallery2_android/util/extensions.dart';
 
 class BackendFile {
   final String name;
@@ -9,7 +8,7 @@ class BackendFile {
   final String _parentPath;
 
   /// Relative API path. Does not include server url.
-  String get apiPath => p.join(_parentPath, name.encodeUri()).replaceAll("./", "");
+  String get apiPath => p.join(_parentPath, name).replaceAll("./", "");
 
   BackendFile({required this.name, required this.id, required String parentPath}) : _parentPath = parentPath;
 

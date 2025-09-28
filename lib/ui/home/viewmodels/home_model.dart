@@ -167,11 +167,11 @@ class HomeModel extends SafeChangeNotifier {
   /// Start a search for the given text [searchText].
   /// Result will be available via [currentState].
   void textSearch(String searchText) {
-    if (currentState.isSearching && currentState.title == searchText) return;
     if (!currentState.isSearching) {
       _addStack(HomeModelState.searching(sortOption, sortAscending, title: searchText));
     }
-    Directory? baseDir = _state.reversed.skip(1).first.baseDirectory;
+    Directory? baseDir;
+    if (stackPosition > 1) baseDir = _state.reversed.skip(1).first.baseDirectory;
     _cancelableApiRequest(() {
       return _itemRepository.search(baseDir, searchText);
     });

@@ -18,7 +18,7 @@ abstract class TextSearchQuery extends SearchQuery {
   @override
   Map<String, dynamic> toJson() => {
         'type': type,
-        'text': text.encodeUri(),
+        'text': text,
       };
 }
 

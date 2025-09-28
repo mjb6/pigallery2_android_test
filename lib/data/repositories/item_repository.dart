@@ -14,14 +14,16 @@ class ItemRepositoryImpl implements ItemRepository {
 
   @override
   Future<Directory?> search(Directory? baseDir, String searchText) async {
-    String path = baseDir?.relativeApiPath ?? ".";
-    SearchQuery query = AndSearchQuery([
-      DirectorySearchQuery(text: path),
-      AnyTextSearchQuery(text: searchText),
-    ]);
+    SearchQuery query = AnyTextSearchQuery(text: searchText);
+    if (baseDir != null){
+      query = AndSearchQuery([
+        DirectorySearchQuery(text: baseDir.relativeApiPath),
+        query,
+      ]);
+    }
     BackendDirectory? result = (await _api.search(query))?.toDirectory();
     // remove current directory from response
-    result?.directories.removeWhere((element) => element.apiPath == path);
+    result?.directories.removeWhere((element) => element.apiPath == baseDir?.relativeApiPath);
     return result?.let((it) => Directory.fromBackend(result));
   }
 

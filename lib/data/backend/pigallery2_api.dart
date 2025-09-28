@@ -83,7 +83,7 @@ class PiGallery2Api {
   Future<ApiResponse<SessionData>> login(String serverUrl, LoginCredentials credentials) => _runCatching(() => _login(serverUrl, credentials));
 
   Future<ApiResponse<BackendDirectory>> _getDirectories(String serverUrl, String path, SessionData? sessionData) async {
-    Uri uri = Uri.parse(getDirectoriesEndpoint(serverUrl) + path);
+    Uri uri = Uri.parse(getDirectoriesEndpoint(serverUrl) + Uri.encodeComponent(path));
 
     http.Response response = await _client.get(uri, headers: getHeaders(sessionData));
     Map<String, dynamic> result = json.decode(response.body);
@@ -104,7 +104,7 @@ class PiGallery2Api {
   }
 
   Future<ApiResponse<SearchResult>> _search(String serverUrl, SearchQuery query, SessionData? sessionData) async {
-    Uri uri = Uri.parse(_getSearchEndpoint(serverUrl) + jsonEncode(query));
+    Uri uri = Uri.parse(_getSearchEndpoint(serverUrl) + Uri.encodeComponent(jsonEncode(query)));
 
     http.Response response = await _client.get(uri, headers: getHeaders(sessionData));
     Map<String, dynamic> result = json.decode(response.body);

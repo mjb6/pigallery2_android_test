@@ -42,16 +42,16 @@ class PiGallery2ApiAuthWrapper implements ApiService {
   @override
   String getMediaApiPath(Media item) {
     if (item.isVideo) {
-      return _api.getVideoPath(_getServerUrlOrThrow(), item.relativeApiPath);
+      return _api.getVideoPath(_getServerUrlOrThrow(), item.relativeApiPath.encodeUri());
     }
-    return _api.getImagePath(_getServerUrlOrThrow(), item.relativeApiPath);
+    return _api.getImagePath(_getServerUrlOrThrow(), item.relativeApiPath.encodeUri());
   }
 
   /// Full API path to the thumbnail of [item].
   @override
   String? getThumbnailApiPath(Item item) {
     return item.relativeThumbnailPath?.let((it) {
-      return _api.getThumbnailPath(_getServerUrlOrThrow(), it);
+      return _api.getThumbnailPath(_getServerUrlOrThrow(), it.encodeUri());
     });
   }
 
