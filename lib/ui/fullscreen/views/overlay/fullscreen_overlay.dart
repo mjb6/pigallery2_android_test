@@ -137,7 +137,6 @@ class _FullscreenOverlayState extends State<FullscreenOverlay> with TickerProvid
               child: Text(
                 item.name,
                 overflow: TextOverflow.fade,
-                maxLines: 1,
                 softWrap: false,
                 style: Theme.of(
                   context,

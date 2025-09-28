@@ -111,7 +111,6 @@ class HomeAppBar extends StatelessWidget {
               child: Text(
                 directoryName == "." ? "" : directoryName ?? "",
                 overflow: TextOverflow.fade,
-                maxLines: 1,
                 softWrap: false,
                 style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),

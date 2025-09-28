@@ -43,7 +43,7 @@ class DirectoryItem extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(6.0, 0.0, 6.0, 3.0),
-                  child: Text(dir.name, maxLines: 1, overflow: TextOverflow.fade),
+                  child: Text(dir.name, softWrap: false, overflow: TextOverflow.fade),
                 ),
                 if (showDirectoryItemCount)
                   Padding(
