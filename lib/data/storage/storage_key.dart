@@ -21,7 +21,7 @@ enum StorageKey<T> {
   serverSettings<ServerSettings>(
     ServerSettings(
       servers: [],
-      defaultApiSettings: ApiSettings(basePath: "/pgapi", thumbnailPath: "/320", videoPath: ""),
+      defaultApiSettings: ApiSettings(thumbnailPath: "/320", videoPath: ""),
       selectedServer: "",
     ),
   );

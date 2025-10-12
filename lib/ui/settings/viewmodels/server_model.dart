@@ -28,17 +28,6 @@ class ServerModel extends SafeChangeNotifier {
     notifyListeners();
   }
 
-  String get apiBasePath => _serverRepository.apiSettings.basePath;
-
-  set apiBasePath(String value) {
-    if (value != apiBasePath) {
-      _serverRepository.updateApiSettings(
-        _serverRepository.apiSettings.copyWith(basePath: value),
-      );
-      notifyListeners();
-    }
-  }
-
   String get apiThumbnailPath => _serverRepository.apiSettings.thumbnailPath;
 
   set apiThumbnailPath(String value) {

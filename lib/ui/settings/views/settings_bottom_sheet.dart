@@ -43,15 +43,6 @@ class SettingsBottomSheet extends StatelessWidget {
             spacing: 6,
             children: [
               Selector<ServerModel, String>(
-                selector: (_, model) => model.apiBasePath,
-                builder: (BuildContext context, String value, Widget? child) => EditTextListTile(
-                  title: "API Base Path",
-                  description: "Default: /pgapi",
-                  initialValue: serverModel.apiBasePath,
-                  onSave: (value) => serverModel.apiBasePath = value,
-                ),
-              ),
-              Selector<ServerModel, String>(
                 selector: (_, model) => model.apiThumbnailPath,
                 builder: (BuildContext context, String value, Widget? child) => EditTextListTile(
                   title: "API Thumbnail path",

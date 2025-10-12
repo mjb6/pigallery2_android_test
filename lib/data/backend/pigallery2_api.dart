@@ -11,7 +11,7 @@ import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/util/extensions.dart';
 
 class PiGallery2Api {
-  String _getBaseEndpoint(String serverUrl) => '$serverUrl${_serverRepository.apiSettings.basePath}';
+  String _getBaseEndpoint(String serverUrl) => '$serverUrl/pgapi';
 
   String getDirectoriesEndpoint(String serverUrl) => "${_getBaseEndpoint(serverUrl)}/gallery/content/";
 

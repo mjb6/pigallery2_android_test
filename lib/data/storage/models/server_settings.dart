@@ -71,22 +71,18 @@ class Server {
 }
 
 class ApiSettings {
-  final String basePath;
   final String thumbnailPath;
   final String videoPath;
 
   const ApiSettings({
-    required this.basePath,
     required this.thumbnailPath,
     required this.videoPath,
   });
 
   ApiSettings copyWith({
-    String? basePath,
     String? thumbnailPath,
     String? videoPath,
   }) => ApiSettings(
-    basePath: basePath ?? this.basePath,
     thumbnailPath: thumbnailPath ?? this.thumbnailPath,
     videoPath: videoPath ?? this.videoPath,
   );
@@ -96,13 +92,11 @@ class ApiSettings {
   String toRawJson() => json.encode(toJson());
 
   factory ApiSettings.fromJson(Map<String, dynamic> json) => ApiSettings(
-    basePath: json["basePath"],
     thumbnailPath: json["thumbnailPath"],
     videoPath: json["videoPath"],
   );
 
   Map<String, dynamic> toJson() => {
-    "basePath": basePath,
     "thumbnailPath": thumbnailPath,
     "videoPath": videoPath,
   };
