@@ -1,19 +1,18 @@
 import 'package:async/async.dart';
 import 'package:collection/collection.dart';
 import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
-import 'package:pigallery2_android/data/storage/storage_helper.dart';
 import 'package:pigallery2_android/data/storage/storage_key.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/domain/repositories/item_repository.dart';
+import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 
 class TopPicksModel extends SafeChangeNotifier {
   final ItemRepository _itemRepository;
   final SharedPrefsStorage _storage;
-  late final StorageHelper _storageHelper;
+  final ServerRepository _serverRepository;
 
-  TopPicksModel(this._itemRepository, this._storage) {
-    _storageHelper = StorageHelper(_storage);
+  TopPicksModel(this._itemRepository, this._serverRepository, this._storage) {
     _currentServerUrl = null;
     _showTopPicks = _storage.get(StorageKey.showTopPicks);
     _daysLength = _storage.get(StorageKey.topPicksDaysLength);
@@ -30,7 +29,7 @@ class TopPicksModel extends SafeChangeNotifier {
   String? _currentServerUrl;
 
   /// Whether the top picks have been retrieved for the current server and are empty.
-  bool get isUpToDateAndEmpty => _content.isEmpty && _currentServerUrl != null && _currentServerUrl == _storageHelper.getSelectedServerUrl();
+  bool get isUpToDateAndEmpty => _content.isEmpty && _currentServerUrl != null && _currentServerUrl == _serverRepository.serverUrl;
 
   bool get isLoading => _isLoading;
 
@@ -70,7 +69,7 @@ class TopPicksModel extends SafeChangeNotifier {
   /// - [daysLength] or the current server url have changed.
   void update(int daysLength, bool showTopPicks) {
     _showTopPicks = showTopPicks;
-    String? serverUrl = _storageHelper.getSelectedServerUrl();
+    String? serverUrl = _serverRepository.serverUrl;
     if (_daysLength == daysLength && _currentServerUrl == serverUrl) {
       // nothing changed
       return;

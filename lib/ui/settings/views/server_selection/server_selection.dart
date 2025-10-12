@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:pigallery2_android/ui/server_settings/viewmodels/server_model.dart';
-import 'package:pigallery2_android/ui/server_settings/views/add_server_dialog.dart';
+import 'package:pigallery2_android/ui/settings/viewmodels/add_server_model.dart';
+import 'package:pigallery2_android/ui/settings/viewmodels/server_model.dart';
+import 'package:pigallery2_android/ui/settings/views/server_selection/add_server_dialog.dart';
 import 'package:pigallery2_android/ui/shared/widgets/selectable_card.dart';
 import 'package:provider/provider.dart';
 
@@ -39,14 +40,14 @@ class ServerSelection extends StatelessWidget {
     showDialog(
       context: context,
       builder: (_) {
-        Provider.of<ServerModel>(context, listen: false).reset();
+        Provider.of<AddServerModel>(context, listen: false).reset();
         return const AddServerDialog();
       },
     );
   }
 
   List<Widget> buildListItems(BuildContext context, String? selectedServer) {
-    return context.select<ServerModel, List<String>>((it) => it.serverUrls).map(
+    return context.select<ServerModel, Iterable<String>>((it) => it.serverUrls).map(
       (url) {
         return SelectableCard(
           isSelected: url == selectedServer,

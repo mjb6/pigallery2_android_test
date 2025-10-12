@@ -132,36 +132,6 @@ class GlobalSettingsModel extends SafeChangeNotifier {
     }
   }
 
-  String get apiBasePath => _apiBasePath;
-
-  set apiBasePath(String value) {
-    if (value != _apiBasePath) {
-      _apiBasePath = value;
-      _storage.set(StorageKey.apiBasePath, value);
-      notifyListeners();
-    }
-  }
-
-  String get apiThumbnailPath => _apiThumbnailPath;
-
-  set apiThumbnailPath(String value) {
-    if (value != _apiThumbnailPath) {
-      _apiThumbnailPath = value;
-      _storage.set(StorageKey.apiThumbnailPath, value);
-      notifyListeners();
-    }
-  }
-
-  String get apiVideoPath => _apiVideoPath;
-
-  set apiVideoPath(String value) {
-    if (value != _apiVideoPath) {
-      _apiVideoPath = value;
-      _storage.set(StorageKey.apiVideoPath, value);
-      notifyListeners();
-    }
-  }
-
   int get mediaBackgroundBlur => _mediaBackgroundBlur;
 
   set mediaBackgroundBlur(int value) {
@@ -190,9 +160,6 @@ class GlobalSettingsModel extends SafeChangeNotifier {
   int _gridCrossAxisCountPortrait;
   int _gridCrossAxisCountLandscape;
   bool _showVideoSeekPreview;
-  String _apiBasePath;
-  String _apiThumbnailPath;
-  String _apiVideoPath;
   int _mediaBackgroundBlur;
   MediaBackgroundMode _mediaBackgroundMode;
   final SharedPrefsStorage _storage;
@@ -208,9 +175,6 @@ class GlobalSettingsModel extends SafeChangeNotifier {
       _gridCrossAxisCountPortrait = _storage.get(StorageKey.gridCrossAxisCountPortrait),
       _gridCrossAxisCountLandscape = _storage.get(StorageKey.gridCrossAxisCountLandscape),
       _showVideoSeekPreview = _storage.get(StorageKey.showVideoSeekPreview),
-      _apiBasePath = _storage.get(StorageKey.apiBasePath),
-      _apiThumbnailPath = _storage.get(StorageKey.apiThumbnailPath),
       _mediaBackgroundBlur = _storage.get(StorageKey.mediaBackgroundBlur),
-      _mediaBackgroundMode = _storage.get(StorageKey.mediaBackgroundMode),
-      _apiVideoPath = _storage.get(StorageKey.apiVideoPath);
+      _mediaBackgroundMode = _storage.get(StorageKey.mediaBackgroundMode);
 }

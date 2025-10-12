@@ -1,12 +1,16 @@
+import 'package:pigallery2_android/data/backend/api_service.dart';
 import 'package:pigallery2_android/data/storage/models/session_data.dart';
 import 'package:pigallery2_android/data/backend/models/auth/connection_test_result.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
+import 'package:pigallery2_android/ui/settings/viewmodels/server_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 
-class ServerModel extends SafeChangeNotifier {
+class AddServerModel extends SafeChangeNotifier {
   final ServerRepository _serverRepository;
+  final ApiService _apiService;
+  final ServerModel _serverModel;
 
-  ServerModel(ServerRepository serverRepository) : _serverRepository = serverRepository;
+  AddServerModel(this._serverRepository, this._apiService, this._serverModel);
 
   SessionData? _lastSessionData;
 
@@ -15,25 +19,8 @@ class ServerModel extends SafeChangeNotifier {
   String? testUrlErrorText;
   bool testFailedAuth = false;
 
-  String? get serverUrl => _serverRepository.serverUrl;
-
-  List<String> get serverUrls => _serverRepository.serverUrls;
-
   Future<void> addServer(String url, String? username, String? password) async {
-    bool added = await _serverRepository.addServer(url, username, password, _lastSessionData);
-    if (added) {
-      notifyListeners();
-    }
-  }
-
-  Future<void> deleteServer(String url) async {
-    await _serverRepository.deleteServer(url);
-    notifyListeners();
-  }
-
-  Future<void> selectServer(String url) async {
-    await _serverRepository.selectServer(url);
-    notifyListeners();
+    await _serverModel.addServer(url, username, password, _lastSessionData);
   }
 
   void credentialsChanged() {
@@ -53,7 +40,7 @@ class ServerModel extends SafeChangeNotifier {
   }
 
   Future<void> testConnection(String url, String? username, String? password) async {
-    if (serverUrls.contains(url)) {
+    if (_serverRepository.serverUrls.contains(url)) {
       testUrlErrorText = "Server already exists";
       testFailedAuth = false;
       testSuccessAuth = false;
@@ -62,7 +49,7 @@ class ServerModel extends SafeChangeNotifier {
       notifyListeners();
       return;
     }
-    ConnectionTestResult result = await _serverRepository.testConnection(url, username, password);
+    ConnectionTestResult result = await _apiService.testConnection(url, username, password);
     if (result.serverUnreachable) {
       testUrlErrorText = "Can't connect to server";
       testFailedAuth = false;

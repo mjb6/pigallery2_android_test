@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
-import 'package:pigallery2_android/ui/server_settings/views/bottom_sheet_handle.dart';
+import 'package:pigallery2_android/ui/settings/views/server_selection/bottom_sheet_handle.dart';
 import 'package:pigallery2_android/util/extensions.dart';
 
 class MediaInfoBottomSheet extends StatelessWidget {

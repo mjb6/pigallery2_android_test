@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
-import 'package:pigallery2_android/data/storage/storage_helper.dart';
+import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/flatten_dir_button.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/sort_option_button.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
@@ -66,7 +65,7 @@ class HomeAppBar extends StatelessWidget {
       actions.add(
         IconButton(
           onPressed: () {
-            String? url = StorageHelper(context.read<SharedPrefsStorage>()).getSelectedServerUrl();
+            String? url = context.read<ServerRepository>().serverUrl;
             url?.let((it) => showAdminPanel(context, it));
           },
           icon: const Icon(Icons.manage_accounts),

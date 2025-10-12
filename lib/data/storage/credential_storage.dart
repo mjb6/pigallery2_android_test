@@ -2,9 +2,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pigallery2_android/data/backend/models/auth/login_credentials.dart';
 
 class CredentialStorage {
-  final _storage = const FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
-  );
+  final FlutterSecureStorage _storage;
+  CredentialStorage(this._storage);
 
   String _getUsernameKey(String url) => "$url-username";
 

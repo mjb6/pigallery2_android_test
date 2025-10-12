@@ -1,9 +1,12 @@
-import 'package:pigallery2_android/data/backend/models/auth/connection_test_result.dart';
+import 'package:pigallery2_android/data/storage/models/server_settings.dart';
 import 'package:pigallery2_android/data/storage/models/session_data.dart';
 
 abstract interface class ServerRepository {
+  Iterable<String> get serverUrls;
+
   String? get serverUrl;
-  List<String> get serverUrls;
+
+  ApiSettings get apiSettings;
 
   Future<bool> addServer(String url, String? username, String? password, SessionData? sessionData);
 
@@ -11,7 +14,5 @@ abstract interface class ServerRepository {
 
   Future<void> selectServer(String url);
 
-  Future<ConnectionTestResult> testConnection(String url, String? username, String? password);
-
-  Future<void> startIndexingJob();
+  Future<void> updateApiSettings(ApiSettings apiSettings);
 }

@@ -1,4 +1,4 @@
-
+import 'package:pigallery2_android/data/storage/models/server_settings.dart';
 import 'package:pigallery2_android/data/storage/storage_key.dart';
 import 'package:pigallery2_android/domain/models/media_background_mode.dart';
 import 'package:pigallery2_android/domain/models/sort_option.dart';
@@ -12,10 +12,12 @@ class TypeHelper<T> {
 }
 
 class SharedPrefsStorage {
-  late SharedPreferences _prefs;
+  late SharedPreferencesWithCache _prefs;
 
   Future<void> init() async {
-    _prefs = await SharedPreferences.getInstance();
+    _prefs = await SharedPreferencesWithCache.create(
+        cacheOptions: const SharedPreferencesWithCacheOptions()
+    );
   }
 
   T? _get<T>(String key) {
@@ -27,6 +29,7 @@ class SharedPrefsStorage {
       <= const TypeHelper<List<String>>() => _prefs.getStringList(key) as T?,
       <= const TypeHelper<SortOption>() => _prefs.getInt(key)?.let((it) => SortOption.values[it]) as T?,
       <= const TypeHelper<MediaBackgroundMode>() => _prefs.getInt(key)?.let((it) => MediaBackgroundMode.values[it]) as T?,
+      <= const TypeHelper<ServerSettings>() => _prefs.getString(key)?.let((it) => ServerSettings.fromRawJson(it) as T),
       _ => throw UnsupportedError("Unsupported data type $T")
     };
   }
@@ -47,7 +50,7 @@ class SharedPrefsStorage {
     }
   }
 
-  Future<bool> _set<T>(String key, T value) {
+  Future<void> _set<T>(String key, T value) {
     return switch(TypeHelper<T>()) {
       <= const TypeHelper<String>() => _prefs.setString(key, value as String),
       <= const TypeHelper<int>() => _prefs.setInt(key, value as int),
@@ -55,23 +58,24 @@ class SharedPrefsStorage {
       <= const TypeHelper<double>() => _prefs.setDouble(key, value as double),
       <= const TypeHelper<List<String>>() => _prefs.setStringList(key, value as List<String>),
       <= const TypeHelper<Enum>() => _prefs.setInt(key, (value as Enum).index),
+      <= const TypeHelper<ServerSettings>() => _prefs.setString(key, (value as ServerSettings).toRawJson()),
       _ => throw UnsupportedError("Unsupported data type $T")
     };
   }
 
-  Future<bool> setWithKey<T>(String key, T value) async {
+  Future<void> setWithKey<T>(String key, T value) async {
     try {
       return await _set(key, value);
     } on Exception {
-      return Future.value(false);
+      return Future.value();
     }
   }
 
-  Future<bool> set<T>(StorageKey<T> key, T value) async {
+  Future<void> set<T>(StorageKey<T> key, T value) async {
     try {
       return await _set(key.key, value);
     } on Exception {
-      return Future.value(false);
+      return Future.value();
     }
   }
 

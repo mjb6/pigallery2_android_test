@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/domain/models/media_background_mode.dart';
-import 'package:pigallery2_android/ui/server_settings/views/bottom_sheet_handle.dart';
+import 'package:pigallery2_android/ui/settings/views/server_selection/bottom_sheet_handle.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/shared/widgets/custom_tabbar.dart';
 import 'package:provider/provider.dart';

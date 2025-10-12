@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logging/logging.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:pigallery2_android/data/backend/api_service.dart';
@@ -11,6 +12,7 @@ import 'package:pigallery2_android/data/repositories/item_repository.dart';
 import 'package:pigallery2_android/data/repositories/media_repository.dart';
 import 'package:pigallery2_android/data/repositories/server_repository.dart';
 import 'package:pigallery2_android/data/storage/pigallery2_image_cache.dart';
+import 'package:pigallery2_android/data/storage/session_storage.dart';
 import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
 import 'package:pigallery2_android/data/storage/storage_key.dart';
 import 'package:pigallery2_android/domain/repositories/item_repository.dart';
@@ -18,10 +20,11 @@ import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
+import 'package:pigallery2_android/ui/settings/viewmodels/add_server_model.dart';
+import 'package:pigallery2_android/ui/settings/viewmodels/server_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/image_preloader.dart';
 import 'package:pigallery2_android/util/extensions.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
-import 'package:pigallery2_android/ui/server_settings/viewmodels/server_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/top_picks/viewmodels/top_picks_model.dart';
 import 'package:pigallery2_android/ui/themes.dart';
@@ -35,7 +38,7 @@ class MyHttpOverrides extends HttpOverrides {
   HttpClient createHttpClient(SecurityContext? context) {
     return super.createHttpClient(context)
       ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-  }
+  } 
 }
 
 class MyWidgetsBinding extends WidgetsFlutterBinding {
@@ -63,19 +66,23 @@ void main() async {
   }
   setupLogging();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  runApp(MyApp(storage));
+  FlutterSecureStorage secureStorage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
+  SessionStorage sessionStorage = SessionStorage(secureStorage);
+  await sessionStorage.init();
+  runApp(MyApp(storage, secureStorage ,sessionStorage));
 }
 
 class MyApp extends StatelessWidget {
   final SharedPrefsStorage _storage;
   late final CredentialStorage _credentialStorage;
-  late final ApiService _apiService;
+  late final SessionStorage _sessionStorage;
   late final GlobalSettingsModel _settingsModel;
 
-  MyApp(this._storage, {super.key}) {
-    _credentialStorage = CredentialStorage();
+  MyApp(this._storage, FlutterSecureStorage secureStorage, this._sessionStorage, {super.key}) {
+    _credentialStorage = CredentialStorage(secureStorage);
     _settingsModel = GlobalSettingsModel(_storage);
-    _apiService = PiGallery2ApiAuthWrapper(_storage, _credentialStorage, _settingsModel);
   }
 
   @override
@@ -87,19 +94,24 @@ class MyApp extends StatelessWidget {
             return _storage;
           },
         ),
+        Provider<ServerRepository>(
+          create: (context) {
+            return ServerRepositoryImpl(_storage, _credentialStorage, _sessionStorage);
+          },
+        ),
+        Provider<ApiService>(
+          create: (context) {
+            return PiGallery2ApiAuthWrapper(_credentialStorage, _sessionStorage, context.read());
+          },
+        ),
         Provider<ItemRepository>(
           create: (context) {
-            return ItemRepositoryImpl(_apiService);
+            return ItemRepositoryImpl(context.read());
           },
         ),
         Provider<MediaRepository>(
           create: (context) {
-            return MediaRepositoryImpl(_apiService);
-          },
-        ),
-        Provider<ServerRepository>(
-          create: (context) {
-            return ServerRepositoryImpl(_apiService, _storage, _credentialStorage);
+            return MediaRepositoryImpl(context.read());
           },
         ),
         Provider<ImagePreloader>(
@@ -116,19 +128,24 @@ class MyApp extends StatelessWidget {
             return ServerModel(Provider.of<ServerRepository>(context, listen: false));
           }),
         ),
+        ChangeNotifierProvider<AddServerModel>(
+          create: ((context) {
+            return AddServerModel(context.read(), context.read(), context.read());
+          }),
+        ),
         ChangeNotifierProvider<HomeModel>(
           create: ((context) {
-            return HomeModel(Provider.of<ItemRepository>(context, listen: false), _storage);
+            return HomeModel(Provider.of<ItemRepository>(context, listen: false), context.read(), _storage);
           }),
         ),
         ChangeNotifierProvider<GlobalSettingsModel>(create: ((context) => _settingsModel)),
         ChangeNotifierProxyProvider<GlobalSettingsModel, TopPicksModel>(
           create: ((context) {
-            return TopPicksModel(Provider.of<ItemRepository>(context, listen: false), _storage);
+            return TopPicksModel(Provider.of<ItemRepository>(context, listen: false), context.read(), _storage);
           }),
           update: (BuildContext context, GlobalSettingsModel model, TopPicksModel? previous) {
             if (previous == null) {
-              return TopPicksModel(Provider.of<ItemRepository>(context, listen: false), _storage);
+              return TopPicksModel(Provider.of<ItemRepository>(context, listen: false), context.read(), _storage);
             }
             return previous..update(model.topPicksDaysLength, model.showTopPicks);
           },

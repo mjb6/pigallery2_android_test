@@ -7,19 +7,19 @@ import 'package:pigallery2_android/data/storage/models/session_data.dart';
 import 'package:pigallery2_android/data/backend/models/directory.dart';
 import 'package:pigallery2_android/data/backend/models/search/search_query.dart';
 import 'package:pigallery2_android/data/backend/models/search/search_result.dart';
-import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
+import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/util/extensions.dart';
 
 class PiGallery2Api {
-  String _getBaseEndpoint(String serverUrl) => '$serverUrl${_settingsModel.apiBasePath}';
+  String _getBaseEndpoint(String serverUrl) => '$serverUrl${_serverRepository.apiSettings.basePath}';
 
   String getDirectoriesEndpoint(String serverUrl) => "${_getBaseEndpoint(serverUrl)}/gallery/content/";
 
   String getImagePath(String serverUrl, String relativePath) => "${getDirectoriesEndpoint(serverUrl)}$relativePath";
 
-  String getVideoPath(String serverUrl, String relativePath) => "${getDirectoriesEndpoint(serverUrl)}$relativePath${_settingsModel.apiVideoPath}";
+  String getVideoPath(String serverUrl, String relativePath) => "${getDirectoriesEndpoint(serverUrl)}$relativePath${_serverRepository.apiSettings.videoPath}";
 
-  String getThumbnailPath(String serverUrl, String relativePath) => "${getDirectoriesEndpoint(serverUrl)}$relativePath${_settingsModel.apiThumbnailPath}";
+  String getThumbnailPath(String serverUrl, String relativePath) => "${getDirectoriesEndpoint(serverUrl)}$relativePath${_serverRepository.apiSettings.thumbnailPath}";
 
   String getSpritesPath(String serverUrl, String relativePath) => "${_getBaseEndpoint(serverUrl)}/extension/sprites/$relativePath";
 
@@ -31,9 +31,9 @@ class PiGallery2Api {
 
   final _client = http.Client();
 
-  final GlobalSettingsModel _settingsModel;
+  final ServerRepository _serverRepository;
 
-  PiGallery2Api(this._settingsModel);
+  PiGallery2Api(this._serverRepository);
 
   /// Removes all non-relevant cookies
   String _parseCookies(String cookie) {
@@ -45,7 +45,7 @@ class PiGallery2Api {
   Map<String, String> getHeaders(SessionData? sessionData) {
     Map<String, String> headers = {};
     if (sessionData != null) {
-      headers['Cookie'] = sessionData.sessionCookies;
+      headers['Cookie'] = sessionData.cookies;
       sessionData.csrfToken?.let((it) => headers['CSRF-Token'] = it);
     }
     return headers;
@@ -71,7 +71,8 @@ class PiGallery2Api {
       return ApiResponse(
         code: 200,
         result: SessionData(
-          sessionCookies: _parseCookies(response.headers['set-cookie']!),
+          url: serverUrl,
+          cookies: _parseCookies(response.headers['set-cookie']!),
           csrfToken: bodyResult.containsKey('csrfToken') ? bodyResult['csrfToken'] : null,
         ),
       );

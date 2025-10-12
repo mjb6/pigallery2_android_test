@@ -1,7 +1,7 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
+import 'package:pigallery2_android/ui/settings/viewmodels/add_server_model.dart';
 import 'package:pigallery2_android/util/extensions.dart';
-import 'package:pigallery2_android/ui/server_settings/viewmodels/server_model.dart';
 import 'package:provider/provider.dart';
 
 class AddServerDialog extends StatefulWidget {
@@ -28,7 +28,7 @@ class _AddServerDialogState extends State<AddServerDialog> {
   }
 
   void testConnection(BuildContext context) {
-    Provider.of<ServerModel>(context, listen: false).testConnection(
+    Provider.of<AddServerModel>(context, listen: false).testConnection(
       addServerController.text,
       usernameController.text.isEmpty ? null : usernameController.text,
       passwordController.text.isEmpty ? null : passwordController.text,
@@ -50,7 +50,7 @@ class _AddServerDialogState extends State<AddServerDialog> {
   }
 
   InputDecoration buildInputDecorationUrl(BuildContext context) {
-    ServerModel model = Provider.of<ServerModel>(context, listen: false);
+    AddServerModel model = Provider.of<AddServerModel>(context, listen: false);
     return model.testUrlErrorText != null
         ? InputDecoration(errorText: model.testUrlErrorText)
         : (model.testSuccessUrl
@@ -62,12 +62,12 @@ class _AddServerDialogState extends State<AddServerDialog> {
   }
 
   InputDecoration buildInputDecorationAuth(BuildContext context, InputDecoration defaultDecoration) {
-    ServerModel model = Provider.of<ServerModel>(context, listen: false);
+    AddServerModel model = Provider.of<AddServerModel>(context, listen: false);
     return model.testFailedAuth ? const InputDecoration(errorText: "Authentication failed") : (model.testSuccessAuth ? buildSuccessInputDecoration(context, "Authentication successful") : defaultDecoration);
   }
 
   Widget buildServerUrlWidget(BuildContext context) {
-    ServerModel serverModel = Provider.of<ServerModel>(context, listen: false);
+    AddServerModel serverModel = Provider.of<AddServerModel>(context, listen: false);
     return Row(children: [
       Flexible(
         child: TextField(
@@ -103,8 +103,8 @@ class _AddServerDialogState extends State<AddServerDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ServerModel>(
-      builder: (context, ServerModel serverModel, child) => AlertDialog(
+    return Consumer<AddServerModel>(
+      builder: (context, AddServerModel serverModel, child) => AlertDialog(
             insetPadding: const EdgeInsets.all(10),
             title: const Text('Add a Server'),
             scrollable: true,

@@ -5,16 +5,18 @@ import 'package:pigallery2_android/data/backend/api_service.dart';
 import 'package:async/async.dart';
 import 'package:pigallery2_android/domain/models/sort_option.dart';
 import 'package:pigallery2_android/domain/repositories/item_repository.dart';
+import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 
 import 'home_model_state.dart';
 
 class HomeModel extends SafeChangeNotifier {
   final ItemRepository _itemRepository;
+  final ServerRepository _serverRepository;
   final SharedPrefsStorage _storage;
   final List<HomeModelState> _state;
 
-  HomeModel(this._itemRepository, this._storage)
+  HomeModel(this._itemRepository, this._serverRepository, this._storage)
     : _state = [HomeModelState(null, _storage.get(StorageKey.sortOption), _storage.get(StorageKey.sortAscending))] {
     fetchItems();
   }
@@ -29,7 +31,7 @@ class HomeModel extends SafeChangeNotifier {
   HomeModelState get currentState => _state.last;
 
   /// Whether a server has been added.
-  bool get isServerConfigured => _storage.get(StorageKey.serverUrls).isNotEmpty;
+  bool get isServerConfigured => _serverRepository.serverUrl != null;
 
   /// Whether a search page is currently shown via showSearch, but no search has been submitted yet.
   bool _isSearchPending = false;

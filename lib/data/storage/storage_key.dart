@@ -1,9 +1,8 @@
+import 'package:pigallery2_android/data/storage/models/server_settings.dart';
 import 'package:pigallery2_android/domain/models/media_background_mode.dart';
 import 'package:pigallery2_android/domain/models/sort_option.dart';
 
 enum StorageKey<T> {
-  serverUrls<List<String>>([]),
-  selectedServer<int>(0),
   useMaterial3<bool>(true),
   showTopPicks<bool>(true),
   topPicksDaysLength<int>(1),
@@ -17,11 +16,15 @@ enum StorageKey<T> {
   gridCrossAxisCountLandscape<int>(6),
   allowBadCertificates<bool>(false),
   showVideoSeekPreview<bool>(false),
-  apiBasePath<String>("/pgapi"),
-  apiThumbnailPath<String>("/320"),
   mediaBackgroundMode<MediaBackgroundMode>(MediaBackgroundMode.ambient),
   mediaBackgroundBlur<int>(45),
-  apiVideoPath<String>("");
+  serverSettings<ServerSettings>(
+    ServerSettings(
+      servers: [],
+      defaultApiSettings: ApiSettings(basePath: "/pgapi", thumbnailPath: "/320", videoPath: ""),
+      selectedServer: "",
+    ),
+  );
 
   String get key => name;
   final T defaultValue;

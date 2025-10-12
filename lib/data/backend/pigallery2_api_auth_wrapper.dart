@@ -8,29 +8,30 @@ import 'package:pigallery2_android/data/storage/models/session_data.dart';
 import 'package:pigallery2_android/data/backend/models/auth/connection_test_result.dart';
 import 'package:pigallery2_android/data/backend/models/directory.dart';
 import 'package:pigallery2_android/data/backend/pigallery2_api.dart';
-import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
-import 'package:pigallery2_android/data/storage/storage_helper.dart';
+import 'package:pigallery2_android/data/storage/session_storage.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
-import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
+import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/util/extensions.dart';
 import 'package:pigallery2_android/util/strings.dart';
 
 class PiGallery2ApiAuthWrapper implements ApiService {
   final CredentialStorage _credentialStorage;
-  final SharedPrefsStorage _storage;
+  final SessionStorage _sessionStorage;
+  final ServerRepository _serverRepository;
   late final PiGallery2Api _api;
-  late final StorageHelper _storageHelper;
 
-  PiGallery2ApiAuthWrapper(this._storage, this._credentialStorage, GlobalSettingsModel settingsModel) {
-    _api = PiGallery2Api(settingsModel);
-    _storageHelper = StorageHelper(_storage);
+  PiGallery2ApiAuthWrapper(this._credentialStorage, this._sessionStorage, this._serverRepository) {
+    _api = PiGallery2Api(_serverRepository);
   }
 
   @override
-  Map<String, String> get headers => _api.getHeaders(_storageHelper.getSelectedServerSessionData());
+  Map<String, String> get headers {
+    SessionData? sessionData = _serverRepository.serverUrl?.let((it) => _sessionStorage.getSessionData(it));
+    return _api.getHeaders(sessionData);
+  }
 
   String _getServerUrlOrThrow() {
-    String? url = _storageHelper.getSelectedServerUrl();
+    String? url = _serverRepository.serverUrl;
     if (url == null) {
       throw Exception(Strings.errorNoServerConfigured);
     } else {
@@ -62,7 +63,7 @@ class PiGallery2ApiAuthWrapper implements ApiService {
 
   Future<T?> _requestWithAuth<T>(Future<ApiResponse<T>> Function(String, SessionData?) request) async {
     String url = _getServerUrlOrThrow();
-    ApiResponse<T> response = await request(url, _storageHelper.getSessionData(url));
+    ApiResponse<T> response = await request(url, _sessionStorage.getSessionData(url));
 
     if (response.code == 401) {
       /// retry with stored credentials
@@ -72,7 +73,7 @@ class PiGallery2ApiAuthWrapper implements ApiService {
         if (sessionData != null) {
           response = await request(url, sessionData);
           if (response.code == 200 && response.error == null) {
-            await _storageHelper.storeSessionData(url, sessionData);
+            await _sessionStorage.storeSessionData(sessionData);
           }
         }
       }
@@ -96,7 +97,7 @@ class PiGallery2ApiAuthWrapper implements ApiService {
   @override
   Future<void> startIndexingJob() {
     String url = _getServerUrlOrThrow();
-    return _api.startIndexingJob(url, _storageHelper.getSessionData(url));
+    return _api.startIndexingJob(url, _sessionStorage.getSessionData(url));
   }
 
   @override

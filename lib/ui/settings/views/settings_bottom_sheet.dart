@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:pigallery2_android/data/backend/api_service.dart';
 import 'package:pigallery2_android/data/storage/pigallery2_image_cache.dart';
-import 'package:pigallery2_android/domain/repositories/server_repository.dart';
-import 'package:pigallery2_android/ui/server_settings/views/bad_certificate_selection.dart';
-import 'package:pigallery2_android/ui/server_settings/views/bottom_sheet_handle.dart';
-import 'package:pigallery2_android/ui/server_settings/views/server_selection.dart';
+import 'package:pigallery2_android/ui/settings/viewmodels/server_model.dart';
+import 'package:pigallery2_android/ui/settings/views/server_selection/bad_certificate_selection.dart';
+import 'package:pigallery2_android/ui/settings/views/server_selection/bottom_sheet_handle.dart';
+import 'package:pigallery2_android/ui/settings/views/server_selection/server_selection.dart';
 import 'package:pigallery2_android/ui/settings/views/clear_cache_list_tile.dart';
 import 'package:pigallery2_android/ui/settings/views/edit_text_list_tile.dart';
-import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/shared/widgets/custom_tabbar.dart';
 import 'package:pigallery2_android/util/path.dart';
 import 'package:provider/provider.dart';
@@ -15,7 +15,7 @@ class SettingsBottomSheet extends StatelessWidget {
   const SettingsBottomSheet({super.key});
 
   List<TabData> getTabs(BuildContext context) {
-    GlobalSettingsModel settingsModel = context.read<GlobalSettingsModel>();
+    ServerModel serverModel = context.read<ServerModel>();
     return [
       TabData(
         title: const Tab(
@@ -42,31 +42,31 @@ class SettingsBottomSheet extends StatelessWidget {
           child: Column(
             spacing: 6,
             children: [
-              Selector<GlobalSettingsModel, String>(
+              Selector<ServerModel, String>(
                 selector: (_, model) => model.apiBasePath,
                 builder: (BuildContext context, String value, Widget? child) => EditTextListTile(
                   title: "API Base Path",
                   description: "Default: /pgapi",
-                  initialValue: settingsModel.apiBasePath,
-                  onSave: (value) => settingsModel.apiBasePath = value,
+                  initialValue: serverModel.apiBasePath,
+                  onSave: (value) => serverModel.apiBasePath = value,
                 ),
               ),
-              Selector<GlobalSettingsModel, String>(
+              Selector<ServerModel, String>(
                 selector: (_, model) => model.apiThumbnailPath,
                 builder: (BuildContext context, String value, Widget? child) => EditTextListTile(
                   title: "API Thumbnail path",
                   description: "Default: /320\nOlder versions: /thumbnail/240\nLeave empty for full resolution",
-                  initialValue: settingsModel.apiThumbnailPath,
-                  onSave: (value) => settingsModel.apiThumbnailPath = value,
+                  initialValue: serverModel.apiThumbnailPath,
+                  onSave: (value) => serverModel.apiThumbnailPath = value,
                 ),
               ),
-              Selector<GlobalSettingsModel, String>(
+              Selector<ServerModel, String>(
                 selector: (_, model) => model.apiVideoPath,
                 builder: (BuildContext context, String value, Widget? child) => EditTextListTile(
                   title: "API Video path",
                   description: "Empty for full resolution.\nUse /bestfit if Videos don't play",
-                  initialValue: settingsModel.apiVideoPath,
-                  onSave: (value) => settingsModel.apiVideoPath = value,
+                  initialValue: serverModel.apiVideoPath,
+                  onSave: (value) => serverModel.apiVideoPath = value,
                 ),
               ),
             ],
@@ -85,7 +85,7 @@ class SettingsBottomSheet extends StatelessWidget {
             children: [
               ListTile(
                 onTap: () {
-                  Provider.of<ServerRepository>(context, listen: false).startIndexingJob();
+                  Provider.of<ApiService>(context, listen: false).startIndexingJob();
                 },
                 title: Text("Start Indexing Job"),
                 trailing: Icon(Icons.play_arrow),

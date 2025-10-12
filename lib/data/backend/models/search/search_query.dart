@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:pigallery2_android/util/extensions.dart';
 
 sealed class SearchQuery {
   abstract int type;

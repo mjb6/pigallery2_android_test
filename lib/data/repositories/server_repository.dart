@@ -1,72 +1,96 @@
-import 'package:pigallery2_android/data/backend/api_service.dart';
-import 'package:pigallery2_android/data/backend/models/auth/connection_test_result.dart';
+import 'package:collection/collection.dart';
 import 'package:pigallery2_android/data/storage/credential_storage.dart';
+import 'package:pigallery2_android/data/storage/models/server_settings.dart';
 import 'package:pigallery2_android/data/storage/models/session_data.dart';
 import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
-import 'package:pigallery2_android/data/storage/storage_helper.dart';
+import 'package:pigallery2_android/data/storage/session_storage.dart';
 import 'package:pigallery2_android/data/storage/storage_key.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
-import 'package:pigallery2_android/util/extensions.dart';
 
 class ServerRepositoryImpl implements ServerRepository {
-  final ApiService _api;
   final CredentialStorage _credentialStorage;
   final SharedPrefsStorage _storage;
-  late StorageHelper _storageHelper;
+  final SessionStorage _sessionStorage;
 
-  ServerRepositoryImpl(this._api, this._storage, this._credentialStorage) {
-    _storageHelper = StorageHelper(_storage);
+  ServerRepositoryImpl(this._storage, this._credentialStorage, this._sessionStorage);
+
+  ServerSettings get _serverSettings => _storage.get(StorageKey.serverSettings);
+
+  @override
+  Iterable<String> get serverUrls => _serverSettings.servers.map((it) => it.url);
+
+  @override
+  String? get serverUrl {
+    return _serverSettings.servers.firstWhereOrNull((it) => it.url == _serverSettings.selectedServer)?.url;
   }
 
   @override
-  String? get serverUrl => _storageHelper.getSelectedServerUrl();
-
-  @override
-  List<String> get serverUrls => _storage.get(StorageKey.serverUrls);
+  ApiSettings get apiSettings {
+    if (_serverSettings.servers.isEmpty) {
+      return _serverSettings.defaultApiSettings;
+    }
+    return _serverSettings.servers.firstWhere((it) => it.url == _serverSettings.selectedServer).apiSettings;
+  }
 
   @override
   Future<bool> addServer(String url, String? username, String? password, SessionData? sessionData) async {
-    List<String> currentServerUrls = serverUrls.toList();
-    if (!currentServerUrls.addDistinct(url)) {
+    List<Server> servers = _serverSettings.servers.toList();
+    if (servers.any((it) => it.url == url)) {
       return false; // already exists
     }
-    await _storage.set(StorageKey.serverUrls, currentServerUrls);
+    servers.add(Server(url: url, apiSettings: _serverSettings.defaultApiSettings));
+    ServerSettings settings = _serverSettings.copyWith(
+      servers: servers,
+      selectedServer: servers.length == 1 ? url : _serverSettings.selectedServer,
+    );
+    await _storage.set(StorageKey.serverSettings, settings);
+
     if (username != null && password != null) {
       await _credentialStorage.storeCredentials(url, username, password);
     }
     if (sessionData != null) {
-      await _storageHelper.storeSessionData(url, sessionData);
+      await _sessionStorage.storeSessionData(sessionData);
       sessionData = null;
-    }
-    if (currentServerUrls.length == 1) {
-      await selectServer(url);
     }
     return true;
   }
 
   @override
   Future<void> deleteServer(String url) async {
-    List<String> currentServerUrls = serverUrls;
-    int selectedServerIndex = _storage.get(StorageKey.selectedServer);
-    currentServerUrls.remove(url);
-    await _storage.set(StorageKey.serverUrls, currentServerUrls);
+    List<Server> updatedServers = _serverSettings.servers.whereNot((it) => it.url == url).toList();
+    String? selectedServer = _serverSettings.selectedServer;
+    if (selectedServer == url && updatedServers.isNotEmpty) {
+      selectedServer = updatedServers.first.url;
+    }
+    ServerSettings updatedSettings = _serverSettings.copyWith(
+      servers: updatedServers,
+      selectedServer: selectedServer,
+    );
+    await _storage.set(StorageKey.serverSettings, updatedSettings);
     await _credentialStorage.deleteCredentials(url);
-    await _storage.set(StorageKey.selectedServer, selectedServerIndex < 2 ? 0 : selectedServerIndex - 1);
-    await _storageHelper.deleteSessionData(url);
+    await _sessionStorage.deleteSessionData(url);
   }
 
   @override
   Future<void> selectServer(String url) async {
-    await _storage.set(StorageKey.selectedServer, serverUrls.indexOfOrNull(url) ?? 0);
+    await _storage.set(StorageKey.serverSettings, _serverSettings.copyWith(selectedServer: url));
   }
 
   @override
-  Future<ConnectionTestResult> testConnection(String url, String? username, String? password) {
-    return _api.testConnection(url, username, password);
-  }
-
-  @override
-  Future<void> startIndexingJob() {
-    return _api.startIndexingJob();
+  Future<void> updateApiSettings(ApiSettings apiSettings) async {
+    ApiSettings? defaultApiSettings;
+    if (_serverSettings.servers.length <= 1) {
+      defaultApiSettings = apiSettings;
+    }
+    ServerSettings updatedServerSettings = _serverSettings.copyWith(
+      defaultApiSettings: defaultApiSettings,
+      servers: _serverSettings.servers.map((it) {
+        if (it.url == serverUrl) {
+          return it.copyWith(apiSettings: apiSettings);
+        }
+        return it;
+      }).toList(),
+    );
+    await _storage.set(StorageKey.serverSettings, updatedServerSettings);
   }
 }
