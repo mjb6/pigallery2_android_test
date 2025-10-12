@@ -41,15 +41,15 @@ class DirectoryItem extends StatelessWidget {
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
+                if (showDirectoryItemCount)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(6.0, 0.0, 6.0, 0.0),
+                    child: Text(dir.metadata.size.toString()),
+                  ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(6.0, 0.0, 6.0, 3.0),
                   child: Text(dir.name, softWrap: false, overflow: TextOverflow.fade),
                 ),
-                if (showDirectoryItemCount)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(6.0, 0.0, 6.0, 6.0),
-                    child: Text(dir.metadata.size.toString()),
-                  ),
               ],
             ),
           ],
