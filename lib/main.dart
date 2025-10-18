@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logging/logging.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:pigallery2_android/data/backend/api_service.dart';
+import 'package:pigallery2_android/data/repositories/sort_options_repository.dart';
 import 'package:pigallery2_android/data/storage/credential_storage.dart';
 import 'package:pigallery2_android/data/backend/pigallery2_api_auth_wrapper.dart';
 import 'package:pigallery2_android/data/repositories/item_repository.dart';
@@ -18,6 +19,7 @@ import 'package:pigallery2_android/data/storage/storage_key.dart';
 import 'package:pigallery2_android/domain/repositories/item_repository.dart';
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
+import 'package:pigallery2_android/domain/repositories/sort_options_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/ui/settings/viewmodels/add_server_model.dart';
@@ -114,6 +116,11 @@ class MyApp extends StatelessWidget {
             return MediaRepositoryImpl(context.read());
           },
         ),
+        Provider<SortOptionsRepository>(
+          create: (context) {
+            return SortOptionsRepositoryImpl(_storage);
+          },
+        ),
         Provider<ImagePreloader>(
           create: (context) {
             return ImagePreloader(context.read(), context);
@@ -135,7 +142,7 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<HomeModel>(
           create: ((context) {
-            return HomeModel(Provider.of<ItemRepository>(context, listen: false), context.read(), _storage);
+            return HomeModel(Provider.of<ItemRepository>(context, listen: false), context.read(), context.read());
           }),
         ),
         ChangeNotifierProvider<GlobalSettingsModel>(create: ((context) => _settingsModel)),

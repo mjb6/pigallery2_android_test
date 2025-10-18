@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:pigallery2_android/data/storage/models/sort_option.dart';
+
 class ServerSettings {
   final List<Server> servers;
   final ApiSettings defaultApiSettings;
@@ -41,18 +43,22 @@ class ServerSettings {
 class Server {
   final String url;
   final ApiSettings apiSettings;
+  final StoredSortOptions sortOptions;
 
-  const Server({
+  Server({
     required this.url,
     required this.apiSettings,
-  });
+    StoredSortOptions? sortOptions,
+  }) : sortOptions = sortOptions ?? StoredSortOptions(options: {});
 
   Server copyWith({
     String? url,
     ApiSettings? apiSettings,
+    StoredSortOptions? sortOptions,
   }) => Server(
     url: url ?? this.url,
     apiSettings: apiSettings ?? this.apiSettings,
+    sortOptions: sortOptions ?? this.sortOptions,
   );
 
   factory Server.fromRawJson(String str) => Server.fromJson(json.decode(str));
@@ -61,12 +67,14 @@ class Server {
 
   factory Server.fromJson(Map<String, dynamic> json) => Server(
     url: json["url"],
-    apiSettings: ApiSettings.fromJson(json["apiSettings:"]),
+    apiSettings: ApiSettings.fromJson(json["apiSettings"]),
+    sortOptions: StoredSortOptions.fromJson(json["sortOptions"]),
   );
 
   Map<String, dynamic> toJson() => {
     "url": url,
-    "apiSettings:": apiSettings.toJson(),
+    "apiSettings": apiSettings.toJson(),
+    "sortOptions": sortOptions.toJson(),
   };
 }
 

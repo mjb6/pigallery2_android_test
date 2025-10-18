@@ -15,6 +15,7 @@ class SortOptionWidget extends StatelessWidget {
               title: Text("Sort By"),
               scrollable: true,
               content: SortOptionDialog(),
+              contentPadding: EdgeInsets.fromLTRB(24, 20, 24, 10),
             );
           },
         );

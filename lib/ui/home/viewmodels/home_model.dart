@@ -1,11 +1,11 @@
-import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
-import 'package:pigallery2_android/data/storage/storage_key.dart';
+import 'package:pigallery2_android/data/storage/models/sort_option.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/data/backend/api_service.dart';
 import 'package:async/async.dart';
 import 'package:pigallery2_android/domain/models/sort_option.dart';
 import 'package:pigallery2_android/domain/repositories/item_repository.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
+import 'package:pigallery2_android/domain/repositories/sort_options_repository.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 
 import 'home_model_state.dart';
@@ -13,11 +13,11 @@ import 'home_model_state.dart';
 class HomeModel extends SafeChangeNotifier {
   final ItemRepository _itemRepository;
   final ServerRepository _serverRepository;
-  final SharedPrefsStorage _storage;
+  final SortOptionsRepository _sortOptionsRepository;
   final List<HomeModelState> _state;
 
-  HomeModel(this._itemRepository, this._serverRepository, this._storage)
-    : _state = [HomeModelState(null, _storage.get(StorageKey.sortOption), _storage.get(StorageKey.sortAscending))] {
+  HomeModel(this._itemRepository, this._serverRepository, this._sortOptionsRepository)
+    : _state = [HomeModelState(null, _sortOptionsRepository)] {
     fetchItems();
   }
 
@@ -43,25 +43,57 @@ class HomeModel extends SafeChangeNotifier {
 
   CancelableOperation<Directory?>? _currentRequest;
 
-  /// Chosen [SortOption] applied to all [HomeView] instances.
   SortOption get sortOption => currentState.sortOption;
 
-  set sortOption(SortOption option) {
-    for (HomeModelState state in _state) {
-      state.updateSortOption(option);
+  void setSortType(SortType type) {
+    if (sortOption.onlyThisFolder) {
+      currentState.sortType = type;
+    } else {
+      for (HomeModelState state in _state) {
+        if (!state.sortOption.onlyThisFolder) {
+          state.sortType = type;
+        }
+      }
     }
-    _storage.set(StorageKey.sortOption, option);
+
+    _sortOptionsRepository.storeSortOption(
+      sortOption.onlyThisFolder ? currentState.sortingKey : null,
+      SortOption(order: currentState.sortOption.order, type: type, onlyThisFolder: sortOption.onlyThisFolder),
+    );
     notifyListeners();
   }
 
-  /// Whether to sort using [sortOption] in ascending order.
-  bool get sortAscending => currentState.sortAscending;
-
-  set sortOrder(bool sortAscending) {
-    for (HomeModelState state in _state) {
-      state.updateSortOrder(sortAscending);
+  void setSortOrder(SortOrder order) {
+    if (sortOption.onlyThisFolder) {
+      currentState.sortOrder = order;
+    } else {
+      for (HomeModelState state in _state) {
+        if (!state.sortOption.onlyThisFolder) {
+          state.sortOrder = order;
+        }
+      }
     }
-    _storage.set(StorageKey.sortAscending, sortAscending);
+
+    _sortOptionsRepository.storeSortOption(
+      sortOption.onlyThisFolder ? currentState.sortingKey : null,
+      SortOption(order: order, type: currentState.sortOption.type, onlyThisFolder: sortOption.onlyThisFolder),
+    );
+    notifyListeners();
+  }
+
+  void setSortOnlyThisFolder(bool onlyThisFolder) {
+    SortingKey? sortingKey = currentState.sortingKey;
+    if (!onlyThisFolder) {
+      if (sortingKey != null) {
+        _sortOptionsRepository.deleteSortOption(sortingKey);
+      }
+      SortOption sortOption = _sortOptionsRepository.getSortOption(sortingKey);
+      currentState.sortOrder = sortOption.order;
+      currentState.sortType = sortOption.type;
+    } else {
+      _sortOptionsRepository.storeSortOption(sortingKey, currentState.sortOption);
+    }
+    currentState.sortOnlyThisFolder = onlyThisFolder;
     notifyListeners();
   }
 
@@ -72,7 +104,7 @@ class HomeModel extends SafeChangeNotifier {
 
   /// Register a new [HomeView] instance.
   void addStack(Directory baseDirectory) {
-    _addStack(HomeModelState(baseDirectory, sortOption, sortAscending));
+    _addStack(HomeModelState(baseDirectory, _sortOptionsRepository));
     fetchItems();
   }
 
@@ -103,7 +135,7 @@ class HomeModel extends SafeChangeNotifier {
   }
 
   void topPicksSearch(Directory directory) {
-    _addStack(HomeModelState.searching(sortOption, sortAscending, baseDirectory: directory));
+    _addStack(HomeModelState.searching(_sortOptionsRepository, TopPicksSortingKey(), baseDirectory: directory));
     currentState.items = directory.media;
     notifyListeners();
   }
@@ -113,6 +145,8 @@ class HomeModel extends SafeChangeNotifier {
     currentState.isLoading = false;
     if (result != null) {
       currentState.baseDirectory = result;
+      currentState.sortingKey ??= DirectorySortingKey(result.relativeApiPath);
+      currentState.sortOption = _sortOptionsRepository.getSortOption(currentState.sortingKey);
       currentState.items = [...result.directories, ...result.media];
     } else {
       currentState.items = [];
@@ -170,7 +204,7 @@ class HomeModel extends SafeChangeNotifier {
   /// Result will be available via [currentState].
   void textSearch(String searchText) {
     if (!currentState.isSearching) {
-      _addStack(HomeModelState.searching(sortOption, sortAscending, title: searchText));
+      _addStack(HomeModelState.searching(_sortOptionsRepository, SearchSortingKey(), title: searchText));
     }
     Directory? baseDir;
     if (stackPosition > 1) baseDir = _state.reversed.skip(1).first.baseDirectory;
@@ -183,7 +217,7 @@ class HomeModel extends SafeChangeNotifier {
   /// Result will be available via [currentState].
   void flattenDir() {
     Directory? dirToFlatten = currentState.baseDirectory;
-    _addStack(HomeModelState.searching(sortOption, sortAscending, title: dirToFlatten?.name));
+    _addStack(HomeModelState.searching(_sortOptionsRepository, FlattenSortingKey(), title: dirToFlatten?.name));
     _cancelableApiRequest(() {
       return _itemRepository.flattenDirectory(dirToFlatten);
     });

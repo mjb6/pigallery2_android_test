@@ -1,13 +1,10 @@
 import 'package:pigallery2_android/data/storage/models/server_settings.dart';
 import 'package:pigallery2_android/domain/models/media_background_mode.dart';
-import 'package:pigallery2_android/domain/models/sort_option.dart';
 
 enum StorageKey<T> {
   useMaterial3<bool>(true),
   showTopPicks<bool>(true),
   topPicksDaysLength<int>(1),
-  sortOption<SortOption>(SortOption.name),
-  sortAscending<bool>(true),
   showDirectoryItemCount<bool>(false),
   gridRoundedCorners<int>(6),
   gridSpacing<int>(6),
