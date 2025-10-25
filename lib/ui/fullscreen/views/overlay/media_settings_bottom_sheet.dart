@@ -71,34 +71,34 @@ class MediaSettingsBottomSheet extends StatelessWidget {
           ],
         ),
       ),
-      TabData(
-        title: const Tab(
-          child: Text("Video"),
-        ),
-        content: Column(
-          spacing: 6,
-          children: [
-            Selector<GlobalSettingsModel, bool>(
-              selector: (context, model) => model.showVideoSeekPreview,
-              builder: (BuildContext context, showVideoSeekPreview, Widget? child) {
-                return ListTile(
-                  title: const Text("Preview while seeking videos"),
-                  subtitle: const Text("Requires PiGallery2 extension to be installed"),
-                  onTap: () {
-                    Provider.of<GlobalSettingsModel>(context, listen: false).showVideoSeekPreview = !showVideoSeekPreview;
-                  },
-                  trailing: IgnorePointer(
-                    child: Switch(
-                      value: showVideoSeekPreview,
-                      onChanged: (_) {},
-                    ),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
+      // TabData(
+      //   title: const Tab(
+      //     child: Text("Video"),
+      //   ),
+      //   content: Column(
+      //     spacing: 6,
+      //     children: [
+      //       Selector<GlobalSettingsModel, bool>(
+      //         selector: (context, model) => model.showVideoSeekPreview,
+      //         builder: (BuildContext context, showVideoSeekPreview, Widget? child) {
+      //           return ListTile(
+      //             title: const Text("Preview while seeking videos"),
+      //             subtitle: const Text("Requires PiGallery2 extension to be installed"),
+      //             onTap: () {
+      //               Provider.of<GlobalSettingsModel>(context, listen: false).showVideoSeekPreview = !showVideoSeekPreview;
+      //             },
+      //             trailing: IgnorePointer(
+      //               child: Switch(
+      //                 value: showVideoSeekPreview,
+      //                 onChanged: (_) {},
+      //               ),
+      //             ),
+      //           );
+      //         },
+      //       ),
+      //     ],
+      //   ),
+      // ),
     ];
   }
 
