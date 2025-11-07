@@ -1,10 +1,10 @@
 import 'package:backdrop/backdrop.dart';
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
+import 'package:pigallery2_android/ui/home/views/home_view_front.dart';
 import 'package:pigallery2_android/ui/settings/views/settings_bottom_sheet.dart';
 import 'package:pigallery2_android/ui/themes.dart';
 import 'package:pigallery2_android/ui/top_picks/viewmodels/top_picks_model.dart';
-import 'package:pigallery2_android/ui/gallery/gallery_view.dart';
 import 'package:pigallery2_android/ui/app_bar/views/back_layer.dart';
 import 'package:pigallery2_android/ui/app_bar/home_app_bar.dart';
 import 'package:pigallery2_android/util/system_ui.dart';
@@ -46,7 +46,7 @@ class HomeView extends StatelessWidget {
         frontLayerBorderRadius: BorderRadius.zero,
         keepFrontLayerActive: true,
         stickyFrontLayer: true,
-        frontLayer: GalleryView(stackPosition, () => showServerSettings(context)),
+        frontLayer: HomeViewFront(stackPosition),
         backLayer: BackLayer(),
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(toolbarHeight + SystemUi.getPadding().top),

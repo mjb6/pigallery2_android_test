@@ -21,7 +21,7 @@ class ItemRepositoryImpl implements ItemRepository {
         query,
       ]);
     }
-    BackendDirectory? result = (await _api.search(query))?.toDirectory();
+    BackendDirectory? result = (await _api.search(query))?.toDirectory(searchText);
     // remove current directory from response
     result?.directories.removeWhere((element) => element.apiPath == baseDir?.relativeApiPath);
     return result?.let((it) => Directory.fromBackend(result));
@@ -45,14 +45,14 @@ class ItemRepositoryImpl implements ItemRepository {
       final results = [topPicksResult, recentlyAddedResult].whereNot((it) => it == null).cast<SearchResult>();
       searchResult = SearchResult.combine(results);
     }
-    BackendDirectory? result = searchResult?.toDirectory();
+    BackendDirectory? result = searchResult?.toDirectory("");
     return result?.let((it) => Directory.fromBackend(result));
   }
 
   @override
   Future<Directory?> flattenDirectory(Directory? dir) async {
     String path = dir?.relativeApiPath ?? ".";
-    BackendDirectory? result = (await _api.search(DirectorySearchQuery(text: path)))?.toDirectory();
+    BackendDirectory? result = (await _api.search(DirectorySearchQuery(text: path)))?.toDirectory(path);
     result?.directories.clear();
     return result?.let((it) => Directory.fromBackend(result));
   }

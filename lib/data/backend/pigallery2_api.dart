@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:pigallery2_android/data/backend/models/album.dart';
 import 'package:pigallery2_android/data/backend/models/api_response.dart';
 import 'package:pigallery2_android/data/backend/models/auth/login_credentials.dart';
 import 'package:pigallery2_android/data/storage/models/session_data.dart';
@@ -28,6 +29,8 @@ class PiGallery2Api {
   String _getSearchEndpoint(String serverUrl) => "${_getBaseEndpoint(serverUrl)}/search/";
 
   String _getStartJobEndpoint(String serverUrl, String jobId) => "${_getBaseEndpoint(serverUrl)}/admin/jobs/scheduled/$jobId/start";
+
+  String _getAlbumsEndpoint(String serverUrl) => "${_getBaseEndpoint(serverUrl)}/albums";
 
   final _client = http.Client();
 
@@ -110,7 +113,7 @@ class PiGallery2Api {
     http.Response response = await _client.get(uri, headers: getHeaders(sessionData));
     Map<String, dynamic> result = json.decode(response.body);
     if (result["error"] == null) {
-      return ApiResponse(code: response.statusCode, result: SearchResult.fromJson(result['result'], query.title));
+      return ApiResponse(code: response.statusCode, result: SearchResult.fromJson(result['result']));
     } else {
       return ApiResponse(error: result["error"].toString(), code: response.statusCode);
     }
@@ -127,5 +130,25 @@ class PiGallery2Api {
   Future<void> startIndexingJob(String serverUrl, SessionData? sessionData) async {
     Uri uri = Uri.parse(_getStartJobEndpoint(serverUrl, "Indexing"));
     await _client.post(uri, headers: getHeaders(sessionData));
+  }
+
+  Future<ApiResponse<List<AlbumBaseDto>>> _getAlbums(String serverUrl, SessionData? sessionData) async {
+    Uri uri = Uri.parse(_getAlbumsEndpoint(serverUrl));
+
+    http.Response response = await _client.get(uri, headers: getHeaders(sessionData));
+    Map<String, dynamic> result = json.decode(response.body);
+    if (result["error"] == null) {
+      List<AlbumBaseDto> albums = (result['result'] as List<dynamic>).map((it) => AlbumBaseDto.fromJson(it)).toList();
+      return ApiResponse(code: response.statusCode, result: albums);
+    } else {
+      return ApiResponse(error: result["error"].toString(), code: response.statusCode);
+    }
+  }
+
+  Future<ApiResponse<List<AlbumBaseDto>>> getAlbums({
+    required String serverUrl,
+    SessionData? sessionData,
+  }) async {
+    return await _runCatching(() => _getAlbums(serverUrl, sessionData));
   }
 }

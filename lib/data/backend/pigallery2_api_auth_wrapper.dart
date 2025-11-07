@@ -1,4 +1,5 @@
 import 'package:pigallery2_android/data/backend/api_service.dart';
+import 'package:pigallery2_android/data/backend/models/album.dart';
 import 'package:pigallery2_android/data/backend/models/api_response.dart';
 import 'package:pigallery2_android/data/backend/models/search/search_query.dart';
 import 'package:pigallery2_android/data/backend/models/search/search_result.dart';
@@ -92,6 +93,12 @@ class PiGallery2ApiAuthWrapper implements ApiService {
   @override
   Future<SearchResult?> search(SearchQuery query) async {
     return _requestWithAuth((String url, SessionData? sessionData) => _api.search(serverUrl: url, query: query, sessionData: sessionData));
+  }
+
+  @override
+  Future<List<AlbumBaseDto>> getAlbums() async {
+    List<AlbumBaseDto>? albums = await _requestWithAuth((String url, SessionData? sessionData) => _api.getAlbums(serverUrl: url, sessionData: sessionData));
+    return albums ?? [];
   }
 
   @override

@@ -2,14 +2,13 @@ import 'package:pigallery2_android/data/backend/models/models.dart';
 import 'package:path/path.dart' as p;
 
 class SearchResult {
-  final String name;
   final List<BackendMedia> media;
   final List<BackendDirectory> directories;
 
-  BackendDirectory toDirectory() {
+  BackendDirectory toDirectory(String title) {
     return BackendDirectory(
       id: -1,
-      name: name,
+      name: title,
       path: "",
       mediaCount: 0,
       lastModified: 0,
@@ -20,8 +19,7 @@ class SearchResult {
     );
   }
 
-  SearchResult.combine(Iterable<SearchResult> results)
-      : name = results.first.name,
+  SearchResult.combine(Iterable<SearchResult> results):
         media = results.expand((it) => it.media).toSet().toList(),
         directories = results.expand((it) => it.directories).toSet().toList();
 
@@ -43,8 +41,7 @@ class SearchResult {
     return allDirectoriesFromJson(List.from(directoriesJson), "");
   }
 
-  SearchResult.fromJson(Map<String, dynamic> json, String title)
-      : name = title,
+  SearchResult.fromJson(Map<String, dynamic> json):
         media = _parseMedia(json),
         directories = _parseDirectories(json);
 }
