@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logging/logging.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:pigallery2_android/data/backend/api_service.dart';
+import 'package:pigallery2_android/data/repositories/album_repository.dart';
 import 'package:pigallery2_android/data/repositories/sort_options_repository.dart';
 import 'package:pigallery2_android/data/storage/credential_storage.dart';
 import 'package:pigallery2_android/data/backend/pigallery2_api_auth_wrapper.dart';
@@ -16,12 +17,14 @@ import 'package:pigallery2_android/data/storage/pigallery2_image_cache.dart';
 import 'package:pigallery2_android/data/storage/session_storage.dart';
 import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
 import 'package:pigallery2_android/data/storage/storage_key.dart';
+import 'package:pigallery2_android/domain/repositories/album_repository.dart';
 import 'package:pigallery2_android/domain/repositories/item_repository.dart';
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/domain/repositories/sort_options_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
+import 'package:pigallery2_android/ui/home/viewmodels/home_model_selector.dart';
 import 'package:pigallery2_android/ui/settings/viewmodels/add_server_model.dart';
 import 'package:pigallery2_android/ui/settings/viewmodels/server_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/image_preloader.dart';
@@ -40,7 +43,7 @@ class MyHttpOverrides extends HttpOverrides {
   HttpClient createHttpClient(SecurityContext? context) {
     return super.createHttpClient(context)
       ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-  } 
+  }
 }
 
 class MyWidgetsBinding extends WidgetsFlutterBinding {
@@ -73,7 +76,7 @@ void main() async {
   );
   SessionStorage sessionStorage = SessionStorage(secureStorage);
   await sessionStorage.init();
-  runApp(MyApp(storage, secureStorage ,sessionStorage));
+  runApp(MyApp(storage, secureStorage, sessionStorage));
 }
 
 class MyApp extends StatelessWidget {
@@ -111,6 +114,11 @@ class MyApp extends StatelessWidget {
             return ItemRepositoryImpl(context.read());
           },
         ),
+        Provider<AlbumRepository>(
+          create: (context) {
+            return AlbumRepositoryImpl(context.read());
+          },
+        ),
         Provider<MediaRepository>(
           create: (context) {
             return MediaRepositoryImpl(context.read());
@@ -140,9 +148,12 @@ class MyApp extends StatelessWidget {
             return AddServerModel(context.read(), context.read(), context.read());
           }),
         ),
-        ChangeNotifierProvider<HomeModel>(
+        ChangeNotifierProvider<HomeModelSelector>(
           create: ((context) {
-            return HomeModel(Provider.of<ItemRepository>(context, listen: false), context.read(), context.read());
+            return HomeModelSelector(
+              HomeModel(context.read(), context.read(), context.read(), context.read(), false),
+              HomeModel(context.read(), context.read(), context.read(), context.read(), true),
+            );
           }),
         ),
         ChangeNotifierProvider<GlobalSettingsModel>(create: ((context) => _settingsModel)),

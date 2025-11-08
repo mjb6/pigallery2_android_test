@@ -16,7 +16,6 @@ import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/fullscreen_view.dart';
 import 'package:pigallery2_android/ui/gallery/directory_item.dart';
 import 'package:pigallery2_android/ui/gallery/media_item.dart';
-import 'package:pigallery2_android/ui/home/views/home_view.dart';
 import 'package:provider/provider.dart';
 
 class GalleryViewGridView extends StatefulWidget {
@@ -83,17 +82,8 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
   }
 
   void openDirectory(BuildContext context, Directory directory) {
-    Provider.of<HomeModel>(context, listen: false).addStack(directory);
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 200),
-        reverseTransitionDuration: const Duration(milliseconds: 100),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-        pageBuilder: ((_, _, _) => HomeView(widget.stackPosition + 1)),
-      ),
-    );
+    context.read<HomeModel>().addStack(directory);
+    Navigator.of(context).pushNamed("", arguments: widget.stackPosition + 1);
   }
 
   void openFullscreen(BuildContext context, List<Item> items, int totalIndex) async {
@@ -106,8 +96,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
       if (!context.mounted) return;
       _scrollToShowedItem(context, index);
     });
-    await Navigator.push(
-      context,
+    await Navigator.of(context, rootNavigator: true).push(
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.transparent,

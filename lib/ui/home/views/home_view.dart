@@ -1,6 +1,6 @@
 import 'package:backdrop/backdrop.dart';
 import 'package:flutter/material.dart';
-import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
+import 'package:pigallery2_android/ui/home/viewmodels/home_model_selector.dart';
 import 'package:pigallery2_android/ui/home/views/home_view_front.dart';
 import 'package:pigallery2_android/ui/settings/views/settings_bottom_sheet.dart';
 import 'package:pigallery2_android/ui/themes.dart';
@@ -23,22 +23,21 @@ class HomeView extends StatelessWidget {
       builder: (context) => SettingsBottomSheet(),
     ).whenComplete(() {
       if (!context.mounted) return;
-      Provider.of<HomeModel>(context, listen: false).fetchItems();
+      context.read<HomeModelSelector>().model.fetchItems();
       Provider.of<TopPicksModel>(context, listen: false).refresh();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    HomeModel model = Provider.of<HomeModel>(context, listen: false);
     // BackdropScaffold does not enable predictive back gestures.
     // With it enabled, touch inputs are not registered for ~0.5s after the animation is finished.
     return PopScope(
-      canPop: true,
+      canPop: context.read<HomeModelSelector>().model.stackPosition == 0,
       onPopInvokedWithResult: ((bool didPop, _) {
-        if (!didPop) return;
+        context.read<HomeModelSelector>().popRoute();
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
-        model.popStack();
+        context.read<HomeModelSelector>().model.popStack();
       }),
       child: BackdropScaffold(
         primary: false,
@@ -50,7 +49,7 @@ class HomeView extends StatelessWidget {
         backLayer: BackLayer(),
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(toolbarHeight + SystemUi.getPadding().top),
-          child: HomeAppBar(stackPosition, () => showServerSettings(context), key: ValueKey(stackPosition)),
+          child: HomeAppBar(() => showServerSettings(context), key: ValueKey(stackPosition)),
         ),
       ),
     );

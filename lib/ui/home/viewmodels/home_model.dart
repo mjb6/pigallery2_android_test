@@ -3,6 +3,7 @@ import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/data/backend/api_service.dart';
 import 'package:async/async.dart';
 import 'package:pigallery2_android/domain/models/sort_option.dart';
+import 'package:pigallery2_android/domain/repositories/album_repository.dart';
 import 'package:pigallery2_android/domain/repositories/item_repository.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/domain/repositories/sort_options_repository.dart';
@@ -11,12 +12,14 @@ import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dar
 import 'home_model_state.dart';
 
 class HomeModel extends SafeChangeNotifier {
+  final AlbumRepository _albumRepository;
   final ItemRepository _itemRepository;
   final ServerRepository _serverRepository;
   final SortOptionsRepository _sortOptionsRepository;
   final List<HomeModelState> _state;
+  final bool isAlbumView;
 
-  HomeModel(this._itemRepository, this._serverRepository, this._sortOptionsRepository)
+  HomeModel(this._albumRepository, this._itemRepository, this._serverRepository, this._sortOptionsRepository, this.isAlbumView)
     : _state = [HomeModelState(null, _sortOptionsRepository)] {
     fetchItems();
   }
@@ -196,7 +199,14 @@ class HomeModel extends SafeChangeNotifier {
   /// Result will be available via [currentState].
   void fetchItems() {
     _cancelableApiRequest(() {
-      return _itemRepository.getDirectories(path: currentState.baseDirectory?.relativeApiPath);
+      if (stackPosition == 0 && isAlbumView) {
+        return _albumRepository.getAlbums();
+      }
+      Directory? baseDirectory = currentState.baseDirectory;
+      if (baseDirectory is Album) {
+        return _albumRepository.getAlbumContent(baseDirectory);
+      }
+      return _itemRepository.getDirectories(path: baseDirectory?.relativeApiPath);
     });
   }
 

@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:pigallery2_android/data/backend/api_service.dart';
 import 'package:pigallery2_android/data/backend/models/directory.dart';
-import 'package:pigallery2_android/data/backend/models/search/search_query.dart';
+import 'package:pigallery2_android/data/backend/models/search/search.dart';
 import 'package:pigallery2_android/data/backend/models/search/search_result.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/domain/repositories/item_repository.dart';
@@ -14,10 +14,10 @@ class ItemRepositoryImpl implements ItemRepository {
 
   @override
   Future<Directory?> search(Directory? baseDir, String searchText) async {
-    SearchQuery query = AnyTextSearchQuery(text: searchText);
+    SearchQueryDTO query = TextSearch(SearchQueryTypes.anyText, searchText);
     if (baseDir != null){
-      query = AndSearchQuery([
-        DirectorySearchQuery(text: baseDir.relativeApiPath),
+      query = ANDSearchQuery([
+        TextSearch(SearchQueryTypes.directory, baseDir.relativeApiPath),
         query,
       ]);
     }
@@ -36,8 +36,8 @@ class ItemRepositoryImpl implements ItemRepository {
   @override
   /// Combines [TopPicksQuery] with [RecentlyAddedQuery] to also show images from the current year.
   Future<Directory?> getTopPicks(int daysLength) async {
-    SearchResult? topPicksResult = await _api.search(TopPicksQuery(daysLength: daysLength));
-    SearchResult? recentlyAddedResult = await _api.search(RecentlyAddedQuery(daysLength: daysLength));
+    SearchResult? topPicksResult = await _api.search(DatePatternSearch(daysLength, DatePatternFrequency.everyYear));
+    SearchResult? recentlyAddedResult = await _api.search(DatePatternSearch(daysLength, DatePatternFrequency.yearsAgo, agoNumber: 0));
     SearchResult? searchResult;
     if (topPicksResult == null && recentlyAddedResult == null) {
       searchResult = null;
@@ -52,7 +52,7 @@ class ItemRepositoryImpl implements ItemRepository {
   @override
   Future<Directory?> flattenDirectory(Directory? dir) async {
     String path = dir?.relativeApiPath ?? ".";
-    BackendDirectory? result = (await _api.search(DirectorySearchQuery(text: path)))?.toDirectory(path);
+    BackendDirectory? result = (await _api.search(TextSearch(SearchQueryTypes.directory, path)))?.toDirectory(path);
     result?.directories.clear();
     return result?.let((it) => Directory.fromBackend(result));
   }

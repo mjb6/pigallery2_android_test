@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import 'package:pigallery2_android/domain/models/album.dart';
+import 'package:pigallery2_android/domain/models/item.dart';
 
 abstract interface class AlbumRepository {
-  Future<List<Album>> getAlbums();
+  Future<Directory> getAlbums();
+  Future<Directory?> getAlbumContent(Album album);
 }

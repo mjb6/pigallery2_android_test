@@ -4,9 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:pigallery2_android/data/backend/models/album.dart';
 import 'package:pigallery2_android/data/backend/models/api_response.dart';
 import 'package:pigallery2_android/data/backend/models/auth/login_credentials.dart';
+import 'package:pigallery2_android/data/backend/models/search/search.dart';
 import 'package:pigallery2_android/data/storage/models/session_data.dart';
 import 'package:pigallery2_android/data/backend/models/directory.dart';
-import 'package:pigallery2_android/data/backend/models/search/search_query.dart';
 import 'package:pigallery2_android/data/backend/models/search/search_result.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/util/extensions.dart';
@@ -107,7 +107,7 @@ class PiGallery2Api {
     return await _runCatching(() => _getDirectories(serverUrl, path ?? "", sessionData));
   }
 
-  Future<ApiResponse<SearchResult>> _search(String serverUrl, SearchQuery query, SessionData? sessionData) async {
+  Future<ApiResponse<SearchResult>> _search(String serverUrl, SearchQueryDTO query, SessionData? sessionData) async {
     Uri uri = Uri.parse(_getSearchEndpoint(serverUrl) + Uri.encodeComponent(jsonEncode(query)));
 
     http.Response response = await _client.get(uri, headers: getHeaders(sessionData));
@@ -121,7 +121,7 @@ class PiGallery2Api {
 
   Future<ApiResponse<SearchResult>> search({
     required String serverUrl,
-    required SearchQuery query,
+    required SearchQueryDTO query,
     SessionData? sessionData,
   }) async {
     return await _runCatching(() => _search(serverUrl, query, sessionData));

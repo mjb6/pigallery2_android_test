@@ -1,8 +1,11 @@
 import 'package:mime/mime.dart';
+import 'package:pigallery2_android/data/backend/models/album.dart';
 import 'package:pigallery2_android/data/backend/models/models.dart';
+import 'package:pigallery2_android/data/backend/models/search/search.dart';
 
 import 'media_dimension.dart';
 import 'metadata.dart';
+import 'package:path/path.dart' as p;
 
 sealed class Item {
   final String name;
@@ -52,4 +55,22 @@ class Directory extends Item {
           relativeThumbnailPath: backendDirectory.cover?.apiPath,
           metadata: DirectoryMetadata.fromBackend(backendDirectory),
         );
+}
+
+const a = DirectoryMetadata(mediaCount: 0, lastModified: 0);
+
+class Album extends Directory {
+  final SearchQueryDTO searchQuery;
+
+  Album({required super.id, required super.name, required this.searchQuery, super.metadata = a, super.relativeApiPath = "", required super.relativeThumbnailPath, required super.directories, required super.media});
+
+  Album.fromBackend(AlbumBaseDto dto) : searchQuery=dto.searchQuery,super(
+    id: dto.id,
+    name: dto.name,
+    relativeApiPath: "",
+    relativeThumbnailPath: p.join(dto.cache.cover.directory.path, dto.cache.cover.directory.name, dto.cache.cover.name).replaceAll("./", ""),
+    metadata: DirectoryMetadata(mediaCount: dto.cache.itemCount, lastModified: dto.cache.youngestMedia.toDouble()),
+    directories: [],
+    media: []
+  );
 }

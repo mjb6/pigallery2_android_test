@@ -29,7 +29,7 @@ class DirectoryMetadata implements Metadata {
   final int _mediaCount;
   final double _lastModified;
 
-  DirectoryMetadata({required int mediaCount, required double lastModified})
+  const DirectoryMetadata({required int mediaCount, required double lastModified})
       : _mediaCount = mediaCount,
         _lastModified = lastModified;
 

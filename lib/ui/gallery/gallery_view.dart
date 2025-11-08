@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
+import 'package:pigallery2_android/ui/home/viewmodels/home_model_selector.dart';
 import 'package:pigallery2_android/util/strings.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
 import 'package:pigallery2_android/ui/gallery/gallery_grid_view.dart';
@@ -70,14 +71,14 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
           },
           child: Column(
             children: [
-              if (widget.stackPosition == 0 && !context.select<HomeModel, bool>((it) => it.searchOngoing)) const TopPicksView(),
+              if (widget.stackPosition == 0 && context.read<TabEntry>() == TabEntry.home && !context.select<HomeModel, bool>((it) => it.searchOngoing)) const TopPicksView(),
               Flexible(
                 child: Selector<HomeModel, List<Item>>(
                   selector: (context, model) => model.stateOf(widget.stackPosition).items,
                   builder: (context, files, child) {
                     return GalleryViewGridView(
                       widget.stackPosition,
-                      files,
+                      files
                     );
                   },
                 ),
