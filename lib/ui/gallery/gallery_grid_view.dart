@@ -11,7 +11,7 @@ import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_scroll_mo
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/seeking/video_seek_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/seeking/video_seek_preview_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
-import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/fullscreen_view.dart';
 import 'package:pigallery2_android/ui/gallery/directory_item.dart';
@@ -82,7 +82,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
   }
 
   void openDirectory(BuildContext context, Directory directory) {
-    context.read<HomeModel>().addStack(directory);
+    context.read<GalleryModel>().addStack(directory);
     Navigator.of(context).pushNamed("", arguments: widget.stackPosition + 1);
   }
 

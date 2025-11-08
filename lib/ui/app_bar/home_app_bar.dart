@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/flatten_dir_button.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/sort_option_button.dart';
-import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/app_bar/search/gallery_search_delegate.dart';
 import 'package:pigallery2_android/ui/app_bar/views/website_view.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/animated_backdrop_toggle_button.dart';
-import 'package:pigallery2_android/ui/home/viewmodels/home_model_selector.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_selector.dart';
 import 'package:pigallery2_android/util/extensions.dart';
 import 'package:pigallery2_android/util/system_ui.dart';
 import 'package:provider/provider.dart';
@@ -37,16 +37,16 @@ class HomeAppBar extends StatelessWidget {
 
   List<Widget> _buildActions(BuildContext context, int stackPosition) {
     List<Widget> actions = [];
-    bool isServerConfigured = context.select<HomeModelSelector, bool>((it) => it.model.isServerConfigured);
-    bool isSearching = context.select<HomeModelSelector, bool>((it) => it.model.stateOf(stackPosition).isSearching);
-    bool areDirectoriesDisplayed = context.select<HomeModelSelector, bool>(
+    bool isServerConfigured = context.select<GalleryModelSelector, bool>((it) => it.model.isServerConfigured);
+    bool isSearching = context.select<GalleryModelSelector, bool>((it) => it.model.stateOf(stackPosition).isSearching);
+    bool areDirectoriesDisplayed = context.select<GalleryModelSelector, bool>(
       (it) => it.model.stateOf(stackPosition).directories.isNotEmpty,
     );
     if (isServerConfigured && !isSearching) {
       actions.add(
         IconButton(
           onPressed: () async {
-            HomeModel model = context.selectHomeModel();
+            GalleryModel model = context.read<GalleryModelSelector>().model;
             model.startSearch();
             await showSearch(context: context, delegate: GallerySearchDelegate(stackPosition));
             /// transitionDuration of _SearchPageRoute is 300ms
@@ -85,8 +85,8 @@ class HomeAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    int stackPosition = context.select<HomeModelSelector, int>((it) => it.model.stackPosition);
-    String? directoryName = context.select<HomeModelSelector, String?>((it) => it.model.currentState.title);
+    int stackPosition = context.select<GalleryModelSelector, int>((it) => it.model.stackPosition);
+    String? directoryName = context.select<GalleryModelSelector, String?>((it) => it.model.currentState.title);
     final statusBarHeight = SystemUi.getPadding().top;
 
     // not using AppBar since it doesn't properly keep top padding when status bar is hidden
@@ -103,9 +103,9 @@ class HomeAppBar extends StatelessWidget {
             if (stackPosition > 0)
               IconButton(
                 onPressed: () { 
-                  context.read<HomeModelSelector>().popRoute();
+                  context.read<GalleryModelSelector>().popRoute();
                   ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                  context.read<HomeModelSelector>().model.popStack();
+                  context.read<GalleryModelSelector>().model.popStack();
                 },
                 icon: const Icon(Icons.arrow_back),
                 padding: EdgeInsets.zero,

@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 import 'package:provider/provider.dart';
 
@@ -16,20 +16,20 @@ enum TabEntry {
   }
 }
 
-class HomeModelSelector extends SafeChangeNotifier {
-  final Map<TabEntry, HomeModel> _models;
+class GalleryModelSelector extends SafeChangeNotifier {
+  final Map<TabEntry, GalleryModel> _models;
   TabEntry _currentTab = TabEntry.home;
   List<VoidCallback> popRouteCallbacks;
 
-  HomeModelSelector(
-    HomeModel home,
-    HomeModel albums,
+  GalleryModelSelector(
+    GalleryModel home,
+    GalleryModel albums,
   ) : popRouteCallbacks = List<VoidCallback>.filled(TabEntry.values.length, () {}),
       _models = {TabEntry.home: home, TabEntry.albums: albums} {
     model.addListener(notifyListeners);
   }
 
-  HomeModel get model => _models[_currentTab]!;
+  GalleryModel get model => _models[_currentTab]!;
   TabEntry get tab => _currentTab; // todo unused
 
   @override
@@ -38,7 +38,7 @@ class HomeModelSelector extends SafeChangeNotifier {
     super.dispose();
   }
 
-  HomeModel getModelByPage(int page) {
+  GalleryModel getModelByPage(int page) {
     return _models[TabEntry.fromPosition(page)]!;
   }
 
@@ -66,11 +66,5 @@ class HomeModelSelector extends SafeChangeNotifier {
     for (var model in _models.values) {
       model.fetchItems();
     }
-  }
-}
-
-extension SelectHomeModel on BuildContext {
-  HomeModel selectHomeModel() {
-    return select<HomeModelSelector, HomeModel>((it) => it.model);
   }
 }

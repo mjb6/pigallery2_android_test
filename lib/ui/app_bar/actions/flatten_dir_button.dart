@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/home/views/home_view.dart';
 import 'package:provider/provider.dart';
 
@@ -11,7 +11,7 @@ class FlattenDirButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: () {
-        HomeModel model = context.read<HomeModel>();
+        GalleryModel model = context.read<GalleryModel>();
         model.flattenDir();
         Navigator.push(
           context,
@@ -21,7 +21,7 @@ class FlattenDirButton extends StatelessWidget {
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);
             },
-            pageBuilder: ((context, _, _) => HomeView(model.stackPosition)),
+            pageBuilder: ((context, _, _) => HomeView()),
           ),
         );
       },

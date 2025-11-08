@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/sort_option_button.dart';
-import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/gallery/gallery_view.dart';
 import 'package:pigallery2_android/ui/themes.dart';
 import 'package:provider/provider.dart';
@@ -51,7 +51,7 @@ class GallerySearchDelegate extends SearchDelegate<String> {
 
   @override
   Widget buildResults(BuildContext context) {
-    HomeModel model = Provider.of<HomeModel>(context, listen: false);
+    GalleryModel model = Provider.of<GalleryModel>(context, listen: false);
     model.textSearch(query);
     return GalleryView(baseStackPosition + 1, () {});
   }
@@ -59,7 +59,7 @@ class GallerySearchDelegate extends SearchDelegate<String> {
   /// Returns the currently visible [GalleryView] until the search has been submitted.
   @override
   Widget buildSuggestions(BuildContext context) {
-    HomeModel model = Provider.of<HomeModel>(context, listen: false);
+    GalleryModel model = Provider.of<GalleryModel>(context, listen: false);
     int pos = model.stackPosition == baseStackPosition + 1 ? model.stackPosition : baseStackPosition;
     return GalleryView(pos, () {});
   }

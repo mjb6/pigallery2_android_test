@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/data/storage/models/sort_option.dart';
-import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/shared/widgets/selectable_card.dart';
 import 'package:pigallery2_android/util/extensions.dart';
 import 'package:provider/provider.dart';
@@ -16,7 +16,7 @@ class SortOptionDialog extends StatelessWidget {
           height: kMinInteractiveDimension,
           child: SelectableCard(
             isSelected: type == selectedType,
-            onSelected: () => context.read<HomeModel>().setSortType(type),
+            onSelected: () => context.read<GalleryModel>().setSortType(type),
             title: Text(type.getDisplayName()),
           ),
         ),
@@ -33,7 +33,7 @@ class SortOptionDialog extends StatelessWidget {
           height: kMinInteractiveDimension,
           child: SelectableCard(
             isSelected: order == selectedSortOrder,
-            onSelected: () => context.read<HomeModel>().setSortOrder(order),
+            onSelected: () => context.read<GalleryModel>().setSortOrder(order),
             title: Text(order.getDisplayName()),
           ),
         ),
@@ -56,7 +56,7 @@ class SortOptionDialog extends StatelessWidget {
             highlightColor: Colors.transparent,
             hoverColor: Colors.transparent,
             onTap: () {
-              context.read<HomeModel>().setSortOnlyThisFolder(!onlyThisFolder);
+              context.read<GalleryModel>().setSortOnlyThisFolder(!onlyThisFolder);
             },
             child: ListTile(
               contentPadding: EdgeInsets.symmetric(horizontal: 6),
@@ -78,10 +78,10 @@ class SortOptionDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ..._buildSortTypeItems(context, context.select<HomeModel, SortType>((it) => it.sortOption.type)),
+        ..._buildSortTypeItems(context, context.select<GalleryModel, SortType>((it) => it.sortOption.type)),
         const Divider(thickness: 3),
-        ..._buildSortOrderItems(context, context.select<HomeModel, SortOrder>((it) => it.sortOption.order)),
-        _buildCheckBox(context, context.select<HomeModel, bool>((it) => it.sortOption.onlyThisFolder)),
+        ..._buildSortOrderItems(context, context.select<GalleryModel, SortOrder>((it) => it.sortOption.order)),
+        _buildCheckBox(context, context.select<GalleryModel, bool>((it) => it.sortOption.onlyThisFolder)),
       ],
     );
   }

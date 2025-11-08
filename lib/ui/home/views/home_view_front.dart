@@ -2,17 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/ui/app_bar/views/website_view.dart';
 import 'package:pigallery2_android/ui/gallery/gallery_view.dart';
-import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
-import 'package:pigallery2_android/ui/home/viewmodels/home_model_selector.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_selector.dart';
 import 'package:pigallery2_android/ui/settings/views/settings_bottom_sheet.dart';
 import 'package:pigallery2_android/ui/top_picks/viewmodels/top_picks_model.dart';
 import 'package:provider/provider.dart';
 
 class HomeViewFront extends StatefulWidget {
-  final int stackPosition;
-
-  HomeViewFront(this.stackPosition) : super(key: ValueKey(stackPosition));
-
+  const HomeViewFront({super.key});
   @override
   State<StatefulWidget> createState() => _HomeViewFrontState();
 }
@@ -23,7 +20,7 @@ class _HomeViewFrontState extends State<HomeViewFront> with TickerProviderStateM
   @override
   void initState() {
     super.initState();
-    HomeModelSelector selector = context.read();
+    GalleryModelSelector selector = context.read();
     controller = TabController(length: 3, vsync: this);
     controller.addListener(() {
       selector.setPage(controller.index);
@@ -69,7 +66,7 @@ class _HomeViewGalleryPageState extends State<HomeViewGalleryPage> with Automati
       builder: (context) => SettingsBottomSheet(),
     ).whenComplete(() {
       if (!context.mounted) return;
-      context.read<HomeModelSelector>().refetchItems();
+      context.read<GalleryModelSelector>().refetchItems();
       Provider.of<TopPicksModel>(context, listen: false).refresh();
     });
   }
@@ -81,7 +78,7 @@ class _HomeViewGalleryPageState extends State<HomeViewGalleryPage> with Automati
       onGenerateRoute: (routeSettings) {
         int stackPosition =
             routeSettings.arguments as int? ??
-            context.read<HomeModelSelector>().getModelByPage(widget.position).stackPosition;
+            context.read<GalleryModelSelector>().getModelByPage(widget.position).stackPosition;
         return PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 200),
           reverseTransitionDuration: const Duration(milliseconds: 100),
@@ -89,11 +86,11 @@ class _HomeViewGalleryPageState extends State<HomeViewGalleryPage> with Automati
             return FadeTransition(opacity: animation, child: child);
           },
           pageBuilder: (context, _, _) {
-            context.read<HomeModelSelector>().registerPopRouteCallback(widget.position, () => Navigator.pop(context));
+            context.read<GalleryModelSelector>().registerPopRouteCallback(widget.position, () => Navigator.pop(context));
             return Provider.value(
               value: TabEntry.albums,
-              builder: (context, child) => ChangeNotifierProvider<HomeModel>.value(
-                value: context.read<HomeModelSelector>().getModelByPage(widget.position),
+              builder: (context, child) => ChangeNotifierProvider<GalleryModel>.value(
+                value: context.read<GalleryModelSelector>().getModelByPage(widget.position),
                 child: GalleryView(stackPosition, () => showServerSettings(context)),
               ),
             );

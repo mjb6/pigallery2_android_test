@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/domain/models/metadata.dart';
-import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/top_picks/viewmodels/top_picks_model.dart';
 import 'package:pigallery2_android/ui/home/views/home_view.dart';
 import 'package:pigallery2_android/ui/shared/widgets/thumbnail_image.dart';
@@ -16,7 +16,7 @@ class TopPicksInnerView extends StatelessWidget {
   TopPicksInnerView({super.key});
 
   void _openDirectory(BuildContext context, Directory directory) {
-    HomeModel model = Provider.of<HomeModel>(context, listen: false);
+    GalleryModel model = Provider.of<GalleryModel>(context, listen: false);
     model.topPicksSearch(directory);
     Navigator.push(
       context,
@@ -26,7 +26,7 @@ class TopPicksInnerView extends StatelessWidget {
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
-        pageBuilder: ((context, _, _) => HomeView(1)),
+        pageBuilder: ((context, _, _) => HomeView()),
       ),
     ).then((value) {
       if (!context.mounted) return;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
-import 'package:pigallery2_android/ui/home/viewmodels/home_model_selector.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_selector.dart';
 import 'package:pigallery2_android/util/strings.dart';
-import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/gallery/gallery_grid_view.dart';
 import 'package:pigallery2_android/ui/top_picks/views/top_picks_view.dart';
 import 'package:pigallery2_android/ui/shared/widgets/loading_indicator.dart';
@@ -23,7 +23,7 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
 
   void checkForError(BuildContext context, String? error) {
     ScaffoldMessenger.of(context).clearSnackBars();
-    HomeModel model = Provider.of<HomeModel>(context, listen: false);
+    GalleryModel model = Provider.of<GalleryModel>(context, listen: false);
     if (error != null) {
       SnackBar snackBar = SnackBar(
         action: error.contains(Strings.errorNoServerConfigured)
@@ -54,11 +54,11 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    return Selector<HomeModel, bool>(
+    return Selector<GalleryModel, bool>(
       selector: (context, model) => model.stateOf(widget.stackPosition).isLoading,
       builder: (context, isLoading, child) {
         if (isLoading) return const LoadingIndicator();
-        return Selector<HomeModel, String?>(
+        return Selector<GalleryModel, String?>(
           shouldRebuild: (String? previous, String? next) => true,
           selector: (context, model) => model.stateOf(widget.stackPosition).error,
           builder: (BuildContext context, error, Widget? child) {
@@ -71,9 +71,9 @@ class _GalleryViewState extends State<GalleryView> with TickerProviderStateMixin
           },
           child: Column(
             children: [
-              if (widget.stackPosition == 0 && context.read<TabEntry>() == TabEntry.home && !context.select<HomeModel, bool>((it) => it.searchOngoing)) const TopPicksView(),
+              if (widget.stackPosition == 0 && context.read<TabEntry>() == TabEntry.home && !context.select<GalleryModel, bool>((it) => it.searchOngoing)) const TopPicksView(),
               Flexible(
-                child: Selector<HomeModel, List<Item>>(
+                child: Selector<GalleryModel, List<Item>>(
                   selector: (context, model) => model.stateOf(widget.stackPosition).items,
                   builder: (context, files, child) {
                     return GalleryViewGridView(

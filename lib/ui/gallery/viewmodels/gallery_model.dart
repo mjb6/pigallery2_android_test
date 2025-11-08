@@ -9,29 +9,29 @@ import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/domain/repositories/sort_options_repository.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 
-import 'home_model_state.dart';
+import 'gallery_model_state.dart';
 
-class HomeModel extends SafeChangeNotifier {
+class GalleryModel extends SafeChangeNotifier {
   final AlbumRepository _albumRepository;
   final ItemRepository _itemRepository;
   final ServerRepository _serverRepository;
   final SortOptionsRepository _sortOptionsRepository;
-  final List<HomeModelState> _state;
+  final List<GalleryModelState> _state;
   final bool isAlbumView;
 
-  HomeModel(this._albumRepository, this._itemRepository, this._serverRepository, this._sortOptionsRepository, this.isAlbumView)
-    : _state = [HomeModelState(null, _sortOptionsRepository)] {
+  GalleryModel(this._albumRepository, this._itemRepository, this._serverRepository, this._sortOptionsRepository, this.isAlbumView)
+    : _state = [GalleryModelState(null, _sortOptionsRepository)] {
     fetchItems();
   }
 
-  /// [HomeModelState] of the given position in the [Navigator] stack.
-  HomeModelState stateOf(int stackPosition) => _state[stackPosition];
+  /// [GalleryModelState] of the given position in the [Navigator] stack.
+  GalleryModelState stateOf(int stackPosition) => _state[stackPosition];
 
   /// How many pages are on the [Navigator] stack.
   int get stackPosition => _state.length - 1;
 
-  /// [HomeModelState] of the top-most [HomeView] in the [Navigator] stack.
-  HomeModelState get currentState => _state.last;
+  /// [GalleryModelState] of the top-most [HomeView] in the [Navigator] stack.
+  GalleryModelState get currentState => _state.last;
 
   /// Whether a server has been added.
   bool get isServerConfigured => _serverRepository.serverUrl != null;
@@ -52,7 +52,7 @@ class HomeModel extends SafeChangeNotifier {
     if (sortOption.onlyThisFolder) {
       currentState.sortType = type;
     } else {
-      for (HomeModelState state in _state) {
+      for (GalleryModelState state in _state) {
         if (!state.sortOption.onlyThisFolder) {
           state.sortType = type;
         }
@@ -70,7 +70,7 @@ class HomeModel extends SafeChangeNotifier {
     if (sortOption.onlyThisFolder) {
       currentState.sortOrder = order;
     } else {
-      for (HomeModelState state in _state) {
+      for (GalleryModelState state in _state) {
         if (!state.sortOption.onlyThisFolder) {
           state.sortOrder = order;
         }
@@ -100,14 +100,14 @@ class HomeModel extends SafeChangeNotifier {
     notifyListeners();
   }
 
-  void _addStack(HomeModelState state) {
+  void _addStack(GalleryModelState state) {
     _isSearchPending = false;
     _state.add(state);
   }
 
   /// Register a new [HomeView] instance.
   void addStack(Directory baseDirectory) {
-    _addStack(HomeModelState(baseDirectory, _sortOptionsRepository));
+    _addStack(GalleryModelState(baseDirectory, _sortOptionsRepository));
     fetchItems();
   }
 
@@ -138,7 +138,7 @@ class HomeModel extends SafeChangeNotifier {
   }
 
   void topPicksSearch(Directory directory) {
-    _addStack(HomeModelState.searching(_sortOptionsRepository, TopPicksSortingKey(), baseDirectory: directory));
+    _addStack(GalleryModelState.searching(_sortOptionsRepository, TopPicksSortingKey(), baseDirectory: directory));
     currentState.items = directory.media;
     notifyListeners();
   }
@@ -214,7 +214,7 @@ class HomeModel extends SafeChangeNotifier {
   /// Result will be available via [currentState].
   void textSearch(String searchText) {
     if (!currentState.isSearching) {
-      _addStack(HomeModelState.searching(_sortOptionsRepository, SearchSortingKey(), title: searchText));
+      _addStack(GalleryModelState.searching(_sortOptionsRepository, SearchSortingKey(), title: searchText));
     }
     Directory? baseDir;
     if (stackPosition > 1) baseDir = _state.reversed.skip(1).first.baseDirectory;
@@ -227,7 +227,7 @@ class HomeModel extends SafeChangeNotifier {
   /// Result will be available via [currentState].
   void flattenDir() {
     Directory? dirToFlatten = currentState.baseDirectory;
-    _addStack(HomeModelState.searching(_sortOptionsRepository, FlattenSortingKey(), title: dirToFlatten?.name));
+    _addStack(GalleryModelState.searching(_sortOptionsRepository, FlattenSortingKey(), title: dirToFlatten?.name));
     _cancelableApiRequest(() {
       return _itemRepository.flattenDirectory(dirToFlatten);
     });

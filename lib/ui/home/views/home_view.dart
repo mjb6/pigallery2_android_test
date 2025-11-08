@@ -1,6 +1,6 @@
 import 'package:backdrop/backdrop.dart';
 import 'package:flutter/material.dart';
-import 'package:pigallery2_android/ui/home/viewmodels/home_model_selector.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_selector.dart';
 import 'package:pigallery2_android/ui/home/views/home_view_front.dart';
 import 'package:pigallery2_android/ui/settings/views/settings_bottom_sheet.dart';
 import 'package:pigallery2_android/ui/themes.dart';
@@ -11,9 +11,7 @@ import 'package:pigallery2_android/util/system_ui.dart';
 import 'package:provider/provider.dart';
 
 class HomeView extends StatelessWidget {
-  final int stackPosition;
-
-  HomeView(this.stackPosition) : super(key: ValueKey(stackPosition));
+  const HomeView({super.key});
 
   void showServerSettings(BuildContext context) {
     showModalBottomSheet<int>(
@@ -23,7 +21,7 @@ class HomeView extends StatelessWidget {
       builder: (context) => SettingsBottomSheet(),
     ).whenComplete(() {
       if (!context.mounted) return;
-      context.read<HomeModelSelector>().model.fetchItems();
+      context.read<GalleryModelSelector>().model.fetchItems();
       Provider.of<TopPicksModel>(context, listen: false).refresh();
     });
   }
@@ -33,23 +31,22 @@ class HomeView extends StatelessWidget {
     // BackdropScaffold does not enable predictive back gestures.
     // With it enabled, touch inputs are not registered for ~0.5s after the animation is finished.
     return PopScope(
-      canPop: context.read<HomeModelSelector>().model.stackPosition == 0,
+      canPop: context.read<GalleryModelSelector>().model.stackPosition == 0,
       onPopInvokedWithResult: ((bool didPop, _) {
-        context.read<HomeModelSelector>().popRoute();
+        context.read<GalleryModelSelector>().popRoute();
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
-        context.read<HomeModelSelector>().model.popStack();
+        context.read<GalleryModelSelector>().model.popStack();
       }),
       child: BackdropScaffold(
         primary: false,
-        key: ValueKey(stackPosition),
         frontLayerBorderRadius: BorderRadius.zero,
         keepFrontLayerActive: true,
         stickyFrontLayer: true,
-        frontLayer: HomeViewFront(stackPosition),
+        frontLayer: HomeViewFront(),
         backLayer: BackLayer(),
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(toolbarHeight + SystemUi.getPadding().top),
-          child: HomeAppBar(() => showServerSettings(context), key: ValueKey(stackPosition)),
+          child: HomeAppBar(() => showServerSettings(context)),
         ),
       ),
     );

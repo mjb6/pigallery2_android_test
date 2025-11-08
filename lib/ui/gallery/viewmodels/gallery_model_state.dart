@@ -6,7 +6,7 @@ import 'package:pigallery2_android/domain/repositories/sort_options_repository.d
 import 'package:pigallery2_android/util/extensions.dart';
 
 /// Represents the data to be displayed for the current [HomeView].
-class HomeModelState {
+class GalleryModelState {
   /// [Directory] received from the backend.
   Directory? baseDirectory;
 
@@ -46,16 +46,16 @@ class HomeModelState {
   /// All [items] of type [Directory].
   List<Directory> get directories => _directories;
 
-  /// Key for fetching the sort options stored for this [HomeModelState].
+  /// Key for fetching the sort options stored for this [GalleryModelState].
   /// [Null] if nothing fetched yet or no server configured.
   SortingKey? sortingKey;
 
-  HomeModelState(this.baseDirectory, SortOptionsRepository repo)
+  GalleryModelState(this.baseDirectory, SortOptionsRepository repo)
     : sortingKey = baseDirectory?.let((it) => DirectorySortingKey(it.relativeApiPath)) {
     _sortOption = repo.getSortOption(sortingKey);
   }
 
-  HomeModelState.searching(SortOptionsRepository repo, this.sortingKey, {String? title, this.baseDirectory})
+  GalleryModelState.searching(SortOptionsRepository repo, this.sortingKey, {String? title, this.baseDirectory})
     : _title = title,
       isSearching = true {
     _sortOption = repo.getSortOption(sortingKey);

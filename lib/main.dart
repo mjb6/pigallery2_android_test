@@ -24,12 +24,12 @@ import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/domain/repositories/sort_options_repository.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
-import 'package:pigallery2_android/ui/home/viewmodels/home_model_selector.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_selector.dart';
 import 'package:pigallery2_android/ui/settings/viewmodels/add_server_model.dart';
 import 'package:pigallery2_android/ui/settings/viewmodels/server_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/image_preloader.dart';
 import 'package:pigallery2_android/util/extensions.dart';
-import 'package:pigallery2_android/ui/home/viewmodels/home_model.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/top_picks/viewmodels/top_picks_model.dart';
 import 'package:pigallery2_android/ui/themes.dart';
@@ -148,11 +148,11 @@ class MyApp extends StatelessWidget {
             return AddServerModel(context.read(), context.read(), context.read());
           }),
         ),
-        ChangeNotifierProvider<HomeModelSelector>(
+        ChangeNotifierProvider<GalleryModelSelector>(
           create: ((context) {
-            return HomeModelSelector(
-              HomeModel(context.read(), context.read(), context.read(), context.read(), false),
-              HomeModel(context.read(), context.read(), context.read(), context.read(), true),
+            return GalleryModelSelector(
+              GalleryModel(context.read(), context.read(), context.read(), context.read(), false),
+              GalleryModel(context.read(), context.read(), context.read(), context.read(), true),
             );
           }),
         ),
@@ -199,7 +199,7 @@ class MyApp extends StatelessWidget {
               themeMode: ThemeMode.dark,
               theme: themeData,
               darkTheme: themeData,
-              home: HomeView(0),
+              home: HomeView(),
             );
           },
         ),
