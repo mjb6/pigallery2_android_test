@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/sort_option_button.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/gallery/gallery_view.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_selector.dart';
+import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
 import 'package:pigallery2_android/ui/themes.dart';
 import 'package:provider/provider.dart';
 
@@ -18,9 +20,10 @@ class GallerySearchDelegate extends SearchDelegate<String> {
         titleTextStyle: theme.textTheme.titleLarge,
         toolbarTextStyle: theme.textTheme.bodyMedium,
         iconTheme: theme.iconTheme,
-        toolbarHeight: toolbarHeight
+        toolbarHeight: toolbarHeight,
       ),
-      inputDecorationTheme: searchFieldDecorationTheme ??
+      inputDecorationTheme:
+          searchFieldDecorationTheme ??
           InputDecorationTheme(
             hintStyle: searchFieldStyle ?? theme.inputDecorationTheme.hintStyle,
             border: InputBorder.none,
@@ -51,16 +54,27 @@ class GallerySearchDelegate extends SearchDelegate<String> {
 
   @override
   Widget buildResults(BuildContext context) {
-    GalleryModel model = Provider.of<GalleryModel>(context, listen: false);
-    model.textSearch(query);
-    return GalleryView(baseStackPosition + 1, () {});
+    context.read<GalleryModelSelector>().model!.textSearch(query);
+    return Provider.value(
+      value: TabEntry.albums, // todo
+      builder: (context, child) => ChangeNotifierProvider<GalleryModel>.value(
+        value: context.read<GalleryModelSelector>().getModelByTab(0), // todo
+        child: GalleryView(baseStackPosition + 1),
+      ),
+    );
   }
 
   /// Returns the currently visible [GalleryView] until the search has been submitted.
   @override
   Widget buildSuggestions(BuildContext context) {
-    GalleryModel model = Provider.of<GalleryModel>(context, listen: false);
+    GalleryModel model = context.read<GalleryModelSelector>().model!;
     int pos = model.stackPosition == baseStackPosition + 1 ? model.stackPosition : baseStackPosition;
-    return GalleryView(pos, () {});
+    return Provider.value(
+      value: TabEntry.albums, // todo
+      builder: (context, child) => ChangeNotifierProvider<GalleryModel>.value(
+        value: context.read<GalleryModelSelector>().getModelByTab(0), // todo
+        child: GalleryView(pos),
+      ),
+    );
   }
 }

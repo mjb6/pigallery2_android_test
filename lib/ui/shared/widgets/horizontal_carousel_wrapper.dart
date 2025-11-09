@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pigallery2_android/util/extensions.dart';
 
 typedef ExtendedIndexedWidgetBuilder = Widget Function(BuildContext context, int index);
 
@@ -8,11 +9,13 @@ class HorizontalCarouselWrapper extends StatefulWidget {
   final int itemCount;
   final ExtendedIndexedWidgetBuilder builder;
   final Function(int)? onPageChanged;
+  final Function(double)? onPageScroll;
   const HorizontalCarouselWrapper({
     required this.initialIndex,
     required this.itemCount,
     required this.builder,
     this.onPageChanged,
+    this.onPageScroll,
     super.key,
   });
 
@@ -27,6 +30,9 @@ class _HorizontalCarouselWrapperState extends State<HorizontalCarouselWrapper> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: widget.initialIndex);
+    _pageController.addListener(() {
+      _pageController.page?.let((it) => widget.onPageScroll?.call(it));
+    });
   }
 
   @override
@@ -41,11 +47,12 @@ class _HorizontalCarouselWrapperState extends State<HorizontalCarouselWrapper> {
       leftPressed: () => _pageController.previousPage(duration: Duration(milliseconds: 600), curve: Curves.ease),
       rightPressed: () => _pageController.nextPage(duration: Duration(milliseconds: 600), curve: Curves.ease),
       child: PageView.builder(
-          controller: _pageController,
-          itemCount: widget.itemCount,
-          itemBuilder: widget.builder,
-          onPageChanged: widget.onPageChanged,
-          physics: const FasterPageViewScrollPhysics(),
+        controller: _pageController,
+        itemCount: widget.itemCount,
+        itemBuilder: widget.builder,
+        onPageChanged: widget.onPageChanged,
+        physics: const FasterPageViewScrollPhysics(),
+        hitTestBehavior: .opaque,
       ),
     );
   }

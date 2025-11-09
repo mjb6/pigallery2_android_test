@@ -4,8 +4,9 @@ import 'package:intl/intl.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/domain/models/metadata.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
+import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
+import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
 import 'package:pigallery2_android/ui/top_picks/viewmodels/top_picks_model.dart';
-import 'package:pigallery2_android/ui/home/views/home_view.dart';
 import 'package:pigallery2_android/ui/shared/widgets/thumbnail_image.dart';
 import 'package:pigallery2_android/ui/top_picks/views/top_picks_image_wrapper.dart';
 import 'package:provider/provider.dart';
@@ -18,17 +19,9 @@ class TopPicksInnerView extends StatelessWidget {
   void _openDirectory(BuildContext context, Directory directory) {
     GalleryModel model = Provider.of<GalleryModel>(context, listen: false);
     model.topPicksSearch(directory);
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 200),
-        reverseTransitionDuration: const Duration(milliseconds: 100),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-        pageBuilder: ((context, _, _) => HomeView()),
-      ),
-    ).then((value) {
+
+    TabStateModel tabStateModel = context.read<TabStateModel>();
+    navigatorKeys[tabStateModel.currentTab.pos]!.currentState!.pushNamed("", arguments: model.stackPosition).then((value) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).removeCurrentSnackBar();
     });

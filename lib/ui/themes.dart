@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 const double toolbarHeight = 42;
+const Duration fadeTransitionDuration = Duration(milliseconds: 150);
+const Duration fadeTransitionReverseDuration = Duration(milliseconds: 75);
 
 class CustomThemeData {
   static final Color _darkFocusColor = Colors.white.withValues(alpha: 0.12);

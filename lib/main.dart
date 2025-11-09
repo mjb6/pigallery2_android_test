@@ -22,9 +22,13 @@ import 'package:pigallery2_android/domain/repositories/item_repository.dart';
 import 'package:pigallery2_android/domain/repositories/media_repository.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/domain/repositories/sort_options_repository.dart';
+import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_selector.dart';
+import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
+import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
+import 'package:pigallery2_android/ui/home/viewmodels/web_view_model.dart';
 import 'package:pigallery2_android/ui/settings/viewmodels/add_server_model.dart';
 import 'package:pigallery2_android/ui/settings/viewmodels/server_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/image_preloader.dart';
@@ -148,12 +152,33 @@ class MyApp extends StatelessWidget {
             return AddServerModel(context.read(), context.read(), context.read());
           }),
         ),
+        ChangeNotifierProvider<TabStateModel>(
+          create: ((context) {
+            return TabStateModel();
+          }),
+        ),
         ChangeNotifierProvider<GalleryModelSelector>(
           create: ((context) {
             return GalleryModelSelector(
-              GalleryModel(context.read(), context.read(), context.read(), context.read(), false),
-              GalleryModel(context.read(), context.read(), context.read(), context.read(), true),
+              context.read(),
+              GalleryModel(context.read(), context.read(), context.read(), false),
+              GalleryModel(context.read(), context.read(), context.read(), true),
             );
+          }),
+        ),
+        ChangeNotifierProvider<WebViewModel>(
+          create: ((context) {
+            return WebViewModel(context.read());
+          }),
+        ),
+        ChangeNotifierProvider<AppBarModel>(
+          create: ((context) {
+            return AppBarModel(context.read(), context.read(), context.read());
+          }),
+        ),
+        ChangeNotifierProvider<TabNavigatorModel>(
+          create: ((context) {
+            return TabNavigatorModel(context.read(), context.read());
           }),
         ),
         ChangeNotifierProvider<GlobalSettingsModel>(create: ((context) => _settingsModel)),

@@ -1,54 +1,103 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/flatten_dir_button.dart';
+import 'package:pigallery2_android/ui/app_bar/actions/server_settings_action.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/sort_option_button.dart';
+import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_model.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/app_bar/search/gallery_search_delegate.dart';
-import 'package:pigallery2_android/ui/app_bar/views/website_view.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/animated_backdrop_toggle_button.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_selector.dart';
-import 'package:pigallery2_android/util/extensions.dart';
+import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
+import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
 import 'package:pigallery2_android/util/system_ui.dart';
 import 'package:provider/provider.dart';
 
+enum AppBarAction { back, search, flatten, backdrop, settings, sort }
+
+class AppBarState {
+  final String title;
+  final Set<AppBarAction> actions;
+
+  AppBarState({required this.title, required this.actions});
+}
+
 class HomeAppBar extends StatelessWidget {
-  final VoidCallback showServerSettings;
+  const HomeAppBar({super.key});
 
-  const HomeAppBar(this.showServerSettings, {super.key});
+  Set<AppBarAction> buildActions(BuildContext context) {
+    Set<AppBarAction> actions = {AppBarAction.sort};
 
-  void showAdminPanel(BuildContext context, String serverUrl) {
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => WebsiteView(serverUrl),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          // animation that slides the page in from the right
-          const begin = Offset(1.0, 0.0);
-          const end = Offset.zero;
-          const curve = Curves.ease;
+    bool canGoBack = context.select<AppBarModel, bool>((it) => it.canGoBack);
+    if (canGoBack) {
+      actions.add(AppBarAction.back);
+    }
+    final tab = context.select<TabStateModel, TabEntry>((it) => it.currentTab);
 
-          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+    if (!canGoBack && tab != TabEntry.website) {
+      actions.add(AppBarAction.backdrop);
+    }
+    actions.add(AppBarAction.settings);
 
-          return SlideTransition(position: animation.drive(tween), child: child);
-        },
-      ),
+    bool isAlbumView = context.select<GalleryModelSelector, bool>((it) => it.model?.isAlbumView == true);
+    if (isAlbumView) return actions;
+    
+    bool isServerConfigured = context.select<ServerRepository, bool>((it) => it.serverUrl != null);
+    bool isSearching = context.select<GalleryModelSelector, bool>((it) => it.model?.currentState.isSearching == true);
+    bool areDirectoriesDisplayed = context.select<AppBarModel, bool>((it) => it.areDirectoriesDisplayed);
+    if (isServerConfigured && !isSearching && tab != TabEntry.website) {
+      actions.add(AppBarAction.search);
+      if (areDirectoriesDisplayed) {
+        actions.add(AppBarAction.flatten);
+      }
+    }
+    return actions;
+  }
+
+  /// not using AppBar since it doesn't properly keep top padding when status bar is hidden
+  Widget buildAppBarContainer(BuildContext context, {required Widget child}) {
+    ThemeData theme = Theme.of(context);
+    final statusBarHeight = SystemUi.getPadding().top;
+    return Container(
+      padding: EdgeInsets.fromLTRB(6, statusBarHeight, 6, statusBarHeight == 0 ? 0 : 6),
+      color: theme.appBarTheme.backgroundColor,
+      child: child,
     );
   }
 
-  List<Widget> _buildActions(BuildContext context, int stackPosition) {
-    List<Widget> actions = [];
-    bool isServerConfigured = context.select<GalleryModelSelector, bool>((it) => it.model.isServerConfigured);
-    bool isSearching = context.select<GalleryModelSelector, bool>((it) => it.model.stateOf(stackPosition).isSearching);
-    bool areDirectoriesDisplayed = context.select<GalleryModelSelector, bool>(
-      (it) => it.model.stateOf(stackPosition).directories.isNotEmpty,
+  @override
+  Widget build(BuildContext context) {
+    AppBarState state = AppBarState(
+      title: context.select<AppBarModel, String>((it) => it.title),
+      actions: buildActions(context),
     );
-    if (isServerConfigured && !isSearching) {
+    return buildAppBarContainer(
+      context,
+      child: _HomeAppBarInner(
+        state,
+        key: ObjectKey(state),
+      ),
+    );
+  }
+}
+
+class _HomeAppBarInner extends StatelessWidget {
+  final AppBarState state;
+  const _HomeAppBarInner(this.state, {super.key});
+
+  List<Widget> _buildActions(BuildContext context) {
+    List<Widget> actions = [];
+    if (state.actions.contains(AppBarAction.search)) {
       actions.add(
         IconButton(
           onPressed: () async {
-            GalleryModel model = context.read<GalleryModelSelector>().model;
+            GalleryModel model = context.read<GalleryModelSelector>().model!;
             model.startSearch();
-            await showSearch(context: context, delegate: GallerySearchDelegate(stackPosition));
+            await showSearch(
+              context: context,
+              delegate: GallerySearchDelegate(context.read<GalleryModelSelector>().model!.stackPosition),
+            );
+
             /// transitionDuration of _SearchPageRoute is 300ms
             Future.delayed(Duration(milliseconds: 300)).then((it) {
               model.stopSearch();
@@ -58,70 +107,71 @@ class HomeAppBar extends StatelessWidget {
         ),
       );
     }
-    if (stackPosition == 0) {
-      actions.add(IconButton(onPressed: showServerSettings, icon: const Icon(Icons.settings)));
+    if (state.actions.contains(AppBarAction.settings)) {
+      actions.add(IconButton(onPressed: () => showServerSettings(context), icon: const Icon(Icons.settings)));
     }
-    if (stackPosition == 0 && isServerConfigured) {
-      actions.add(
-        IconButton(
-          onPressed: () {
-            String? url = context.read<ServerRepository>().serverUrl;
-            url?.let((it) => showAdminPanel(context, it));
-          },
-          icon: const Icon(Icons.manage_accounts),
-        ),
-      );
-    }
-    if (stackPosition == 0) {
+    if (state.actions.contains(AppBarAction.backdrop)) {
       actions.add(const AnimatedBackdropToggleButton());
     }
-    if (isServerConfigured && !isSearching && areDirectoriesDisplayed) {
+    if (state.actions.contains(AppBarAction.flatten)) {
       actions.add(const FlattenDirButton());
     }
-    actions.addAll([const SortOptionWidget()]);
+    if (state.actions.contains(AppBarAction.sort)) {
+      actions.add(const SortOptionWidget());
+    }
     return actions;
+  }
+
+  Widget _buildNavigation(BuildContext context) {
+    if (state.actions.contains(AppBarAction.back)) {
+      return IconButton(
+        onPressed: () {
+          context.read<TabNavigatorModel>().goBack();
+          ScaffoldMessenger.of(context).removeCurrentSnackBar();
+          context.read<GalleryModelSelector>().model?.popStack();
+        },
+        icon: const Icon(Icons.arrow_back),
+        padding: EdgeInsets.zero,
+      );
+    } else {
+      return SizedBox.shrink();
+    }
+  }
+
+  Widget _buildTitle(BuildContext context) {
+    ThemeData theme = Theme.of(context);
+    return Expanded(
+      child: Text(
+        state.title == "." ? "" : state.title,
+        overflow: TextOverflow.fade,
+        softWrap: false,
+        style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+      ),
+    );
+  }
+
+  List<Widget> _buildLeading(BuildContext context) {
+    return [
+      _buildNavigation(context),
+      SizedBox(width: 6),
+      _buildTitle(context),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    int stackPosition = context.select<GalleryModelSelector, int>((it) => it.model.stackPosition);
-    String? directoryName = context.select<GalleryModelSelector, String?>((it) => it.model.currentState.title);
-    final statusBarHeight = SystemUi.getPadding().top;
 
-    // not using AppBar since it doesn't properly keep top padding when status bar is hidden
-    return Container(
-      padding: EdgeInsets.fromLTRB(6, statusBarHeight, 6, statusBarHeight == 0 ? 0 : 6),
-      color: theme.appBarTheme.backgroundColor,
-      child: IconButtonTheme(
-        data: IconButtonThemeData(
-          style: theme.iconButtonTheme.style?.copyWith(padding: WidgetStateProperty.all(EdgeInsets.zero)),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            if (stackPosition > 0)
-              IconButton(
-                onPressed: () { 
-                  context.read<GalleryModelSelector>().popRoute();
-                  ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                  context.read<GalleryModelSelector>().model.popStack();
-                },
-                icon: const Icon(Icons.arrow_back),
-                padding: EdgeInsets.zero,
-              ),
-            SizedBox(width: 6),
-            Expanded(
-              child: Text(
-                directoryName == "." ? "" : directoryName ?? "",
-                overflow: TextOverflow.fade,
-                softWrap: false,
-                style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              ),
-            ),
-            Row(crossAxisAlignment: CrossAxisAlignment.center, children: _buildActions(context, stackPosition)),
-          ],
-        ),
+    return IconButtonTheme(
+      data: IconButtonThemeData(
+        style: theme.iconButtonTheme.style?.copyWith(padding: WidgetStateProperty.all(EdgeInsets.zero)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ..._buildLeading(context),
+          Row(crossAxisAlignment: CrossAxisAlignment.center, children: _buildActions(context)),
+        ],
       ),
     );
   }

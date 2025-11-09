@@ -85,7 +85,7 @@ class _FullscreenViewState extends State<FullscreenView> {
 
   @override
   Widget build(BuildContext context) {
-    List<Media> media = context.read<GalleryModelSelector>().model.currentState.media;
+    List<Media> media = context.read<GalleryModelSelector>().model?.currentState.media ?? [];
     FullscreenModel fullscreenModel = Provider.of<FullscreenModel>(context, listen: false);
     fullscreenModel.media = media;
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {

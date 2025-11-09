@@ -5,7 +5,6 @@ import 'package:async/async.dart';
 import 'package:pigallery2_android/domain/models/sort_option.dart';
 import 'package:pigallery2_android/domain/repositories/album_repository.dart';
 import 'package:pigallery2_android/domain/repositories/item_repository.dart';
-import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/domain/repositories/sort_options_repository.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 
@@ -14,12 +13,11 @@ import 'gallery_model_state.dart';
 class GalleryModel extends SafeChangeNotifier {
   final AlbumRepository _albumRepository;
   final ItemRepository _itemRepository;
-  final ServerRepository _serverRepository;
   final SortOptionsRepository _sortOptionsRepository;
   final List<GalleryModelState> _state;
   final bool isAlbumView;
 
-  GalleryModel(this._albumRepository, this._itemRepository, this._serverRepository, this._sortOptionsRepository, this.isAlbumView)
+  GalleryModel(this._albumRepository, this._itemRepository, this._sortOptionsRepository, this.isAlbumView)
     : _state = [GalleryModelState(null, _sortOptionsRepository)] {
     fetchItems();
   }
@@ -32,9 +30,6 @@ class GalleryModel extends SafeChangeNotifier {
 
   /// [GalleryModelState] of the top-most [HomeView] in the [Navigator] stack.
   GalleryModelState get currentState => _state.last;
-
-  /// Whether a server has been added.
-  bool get isServerConfigured => _serverRepository.serverUrl != null;
 
   /// Whether a search page is currently shown via showSearch, but no search has been submitted yet.
   bool _isSearchPending = false;
