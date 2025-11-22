@@ -6,7 +6,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.8.0 <4.0.0'
+  sdk: '>=3.10.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -38,7 +38,7 @@ dependencies:
   photo_view:
     git:
       url: https://github.com/Lakjdf/photo_view.git
-  media_kit: 1.2.0
+  media_kit: 1.2.2
   # not upgrading yet since the start of the audio playback causes lag & the first frame is delayed
   # - possibly due to SurfaceProducer migration (& android-surface-size 1x1 + resizing)
   media_kit_video: 1.2.4
