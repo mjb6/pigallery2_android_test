@@ -1,6 +1,6 @@
 import 'package:backdrop/backdrop.dart';
 import 'package:flutter/material.dart';
-import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_selector.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_provider.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
 import 'package:pigallery2_android/ui/home/views/home_view_front.dart';
 import 'package:pigallery2_android/ui/themes.dart';
@@ -19,7 +19,7 @@ class HomeView extends StatelessWidget {
       onPopInvokedWithResult: ((bool didPop, _) {
         context.read<TabNavigatorModel>().goBack();
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
-        context.read<GalleryModelSelector>().model?.popStack();
+        context.read<GalleryModelProvider>().model?.popStack();
       }),
       child: BackdropScaffold(
         primary: false,

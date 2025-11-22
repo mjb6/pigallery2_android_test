@@ -7,7 +7,7 @@ import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/fullscreen_background_widget.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/overlay/fullscreen_overlay.dart';
-import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_selector.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_provider.dart';
 import 'package:pigallery2_android/ui/shared/widgets/horizontal_carousel_wrapper.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/photo_view_widget.dart';
 import 'package:pigallery2_android/ui/fullscreen/views/vertical_dismiss_wrapper.dart';
@@ -85,7 +85,7 @@ class _FullscreenViewState extends State<FullscreenView> {
 
   @override
   Widget build(BuildContext context) {
-    List<Media> media = context.read<GalleryModelSelector>().model?.currentState.media ?? [];
+    List<Media> media = context.read<GalleryModelProvider>().model?.currentState.media ?? [];
     FullscreenModel fullscreenModel = Provider.of<FullscreenModel>(context, listen: false);
     fullscreenModel.media = media;
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {

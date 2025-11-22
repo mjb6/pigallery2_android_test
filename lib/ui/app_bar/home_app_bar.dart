@@ -7,7 +7,7 @@ import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_model.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/app_bar/search/gallery_search_delegate.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/animated_backdrop_toggle_button.dart';
-import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_selector.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_provider.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
 import 'package:pigallery2_android/util/system_ui.dart';
@@ -39,11 +39,11 @@ class HomeAppBar extends StatelessWidget {
     }
     actions.add(AppBarAction.settings);
 
-    bool isAlbumView = context.select<GalleryModelSelector, bool>((it) => it.model?.isAlbumView == true);
+    bool isAlbumView = context.select<GalleryModelProvider, bool>((it) => it.model?.isAlbumView == true);
     if (isAlbumView) return actions;
     
     bool isServerConfigured = context.select<ServerRepository, bool>((it) => it.serverUrl != null);
-    bool isSearching = context.select<GalleryModelSelector, bool>((it) => it.model?.currentState.isSearching == true);
+    bool isSearching = context.select<GalleryModelProvider, bool>((it) => it.model?.currentState.isSearching == true);
     bool areDirectoriesDisplayed = context.select<AppBarModel, bool>((it) => it.areDirectoriesDisplayed);
     if (isServerConfigured && !isSearching && tab != TabEntry.website) {
       actions.add(AppBarAction.search);
@@ -91,11 +91,11 @@ class _HomeAppBarInner extends StatelessWidget {
       actions.add(
         IconButton(
           onPressed: () async {
-            GalleryModel model = context.read<GalleryModelSelector>().model!;
+            GalleryModel model = context.read<GalleryModelProvider>().model!;
             model.startSearch();
             await showSearch(
               context: context,
-              delegate: GallerySearchDelegate(context.read<GalleryModelSelector>().model!.stackPosition),
+              delegate: GallerySearchDelegate(context.read<GalleryModelProvider>().model!.stackPosition),
             );
 
             /// transitionDuration of _SearchPageRoute is 300ms
@@ -128,7 +128,7 @@ class _HomeAppBarInner extends StatelessWidget {
         onPressed: () {
           context.read<TabNavigatorModel>().goBack();
           ScaffoldMessenger.of(context).removeCurrentSnackBar();
-          context.read<GalleryModelSelector>().model?.popStack();
+          context.read<GalleryModelProvider>().model?.popStack();
         },
         icon: const Icon(Icons.arrow_back),
         padding: EdgeInsets.zero,

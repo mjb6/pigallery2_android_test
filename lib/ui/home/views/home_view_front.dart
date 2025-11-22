@@ -3,7 +3,7 @@ import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
 import 'package:pigallery2_android/ui/home/views/website_view.dart';
 import 'package:pigallery2_android/ui/gallery/gallery_view.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
-import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_selector.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_provider.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
 import 'package:pigallery2_android/ui/shared/widgets/horizontal_carousel_wrapper.dart';
 import 'package:pigallery2_android/ui/shared/widgets/keep_alive_widget.dart';
@@ -50,7 +50,7 @@ class HomeViewGalleryPage extends StatelessWidget {
       onGenerateRoute: (routeSettings) {
         int stackPosition =
             routeSettings.arguments as int? ??
-            context.read<GalleryModelSelector>().getModelByTab(position).stackPosition;
+            context.read<GalleryModelProvider>().getModelByTab(position).stackPosition;
         return PageRouteBuilder(
           transitionDuration: fadeTransitionDuration,
           reverseTransitionDuration: fadeTransitionReverseDuration,
@@ -61,7 +61,7 @@ class HomeViewGalleryPage extends StatelessWidget {
             return Provider.value(
               value: TabEntry.fromPosition(position),
               builder: (context, child) => ChangeNotifierProvider<GalleryModel>.value(
-                value: context.read<GalleryModelSelector>().getModelByTab(position),
+                value: context.read<GalleryModelProvider>().getModelByTab(position),
                 child: GalleryView(stackPosition),
               ),
             );

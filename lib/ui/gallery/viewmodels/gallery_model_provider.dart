@@ -3,12 +3,12 @@ import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 
-class GalleryModelSelector extends SafeChangeNotifier {
+class GalleryModelProvider extends SafeChangeNotifier {
   final List<GalleryModel> _models;
   final TabStateModel _tabStateModel;
   int _currentTab = 0;
 
-  GalleryModelSelector(
+  GalleryModelProvider(
     this._tabStateModel,
     GalleryModel home,
     GalleryModel albums,

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/sort_option_button.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/gallery/gallery_view.dart';
-import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_selector.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_provider.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
 import 'package:pigallery2_android/ui/themes.dart';
 import 'package:provider/provider.dart';
@@ -54,11 +54,11 @@ class GallerySearchDelegate extends SearchDelegate<String> {
 
   @override
   Widget buildResults(BuildContext context) {
-    context.read<GalleryModelSelector>().model!.textSearch(query);
+    context.read<GalleryModelProvider>().model!.textSearch(query);
     return Provider.value(
       value: TabEntry.albums, // todo
       builder: (context, child) => ChangeNotifierProvider<GalleryModel>.value(
-        value: context.read<GalleryModelSelector>().getModelByTab(0), // todo
+        value: context.read<GalleryModelProvider>().getModelByTab(0), // todo
         child: GalleryView(baseStackPosition + 1),
       ),
     );
@@ -67,12 +67,12 @@ class GallerySearchDelegate extends SearchDelegate<String> {
   /// Returns the currently visible [GalleryView] until the search has been submitted.
   @override
   Widget buildSuggestions(BuildContext context) {
-    GalleryModel model = context.read<GalleryModelSelector>().model!;
+    GalleryModel model = context.read<GalleryModelProvider>().model!;
     int pos = model.stackPosition == baseStackPosition + 1 ? model.stackPosition : baseStackPosition;
     return Provider.value(
       value: TabEntry.albums, // todo
       builder: (context, child) => ChangeNotifierProvider<GalleryModel>.value(
-        value: context.read<GalleryModelSelector>().getModelByTab(0), // todo
+        value: context.read<GalleryModelProvider>().getModelByTab(0), // todo
         child: GalleryView(pos),
       ),
     );

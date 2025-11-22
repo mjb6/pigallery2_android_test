@@ -1,5 +1,5 @@
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
-import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_selector.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_provider.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/web_view_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
@@ -9,7 +9,7 @@ class AppBarModel extends SafeChangeNotifier {
   bool _canGoBack = false;
   bool _areDirectoriesDisplayed = false;
 
-  final GalleryModelSelector _galleryModelSelector;
+  final GalleryModelProvider _galleryModelSelector;
   final WebViewModel _webviewModel;
   final TabStateModel _tabStateModel;
 
