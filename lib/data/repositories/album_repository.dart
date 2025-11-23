@@ -16,7 +16,7 @@ class AlbumRepositoryImpl implements AlbumRepository {
     return Directory(
       id: -1,
       name: "Albums",
-      relativeApiPath: "",
+      relativeApiPath: "Albums",
       relativeThumbnailPath: null,
       metadata: DirectoryMetadata(mediaCount: 0, lastModified: 0),
       media: [],

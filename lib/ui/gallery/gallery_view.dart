@@ -45,6 +45,25 @@ class GalleryView extends StatelessWidget {
     }
   }
 
+  Widget buildBody(BuildContext context) {
+    return Column(
+      children: [
+        if (stackPosition == 0 &&
+            context.read<TabEntry>() == TabEntry.home &&
+            !context.select<GalleryModel, bool>((it) => it.searchOngoing))
+          const TopPicksView(),
+        Flexible(
+          child: Selector<GalleryModel, List<Item>>(
+            selector: (context, model) => model.stateOf(stackPosition).items,
+            builder: (context, files, child) {
+              return GalleryViewGridView(stackPosition, files);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -62,24 +81,8 @@ class GalleryView extends StatelessWidget {
                   checkForError(context, error);
                 });
               }
-              return child!;
+              return buildBody(context);
             },
-            child: Column(
-              children: [
-                if (stackPosition == 0 &&
-                    context.read<TabEntry>() == TabEntry.home &&
-                    !context.select<GalleryModel, bool>((it) => it.searchOngoing))
-                  const TopPicksView(),
-                Flexible(
-                  child: Selector<GalleryModel, List<Item>>(
-                    selector: (context, model) => model.stateOf(stackPosition).items,
-                    builder: (context, files, child) {
-                      return GalleryViewGridView(stackPosition, files);
-                    },
-                  ),
-                ),
-              ],
-            ),
           );
         },
       ),

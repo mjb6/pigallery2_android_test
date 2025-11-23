@@ -62,12 +62,10 @@ const a = DirectoryMetadata(mediaCount: 0, lastModified: 0);
 class Album extends Directory {
   final SearchQueryDTO searchQuery;
 
-  Album({required super.id, required super.name, required this.searchQuery, super.metadata = a, super.relativeApiPath = "", required super.relativeThumbnailPath, required super.directories, required super.media});
-
   Album.fromBackend(AlbumBaseDto dto) : searchQuery=dto.searchQuery,super(
     id: dto.id,
     name: dto.name,
-    relativeApiPath: "",
+    relativeApiPath: "Albums",
     relativeThumbnailPath: p.join(dto.cache.cover.directory.path, dto.cache.cover.directory.name, dto.cache.cover.name).replaceAll("./", ""),
     metadata: DirectoryMetadata(mediaCount: dto.cache.itemCount, lastModified: dto.cache.youngestMedia.toDouble()),
     directories: [],

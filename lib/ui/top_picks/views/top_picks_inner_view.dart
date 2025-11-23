@@ -84,7 +84,7 @@ class TopPicksInnerView extends StatelessWidget {
             letterSpacing: 1,
             fontSize: 15,
           ),
-        )
+        ),
       ],
     );
   }

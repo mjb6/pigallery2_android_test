@@ -180,6 +180,7 @@ class MyApp extends StatelessWidget {
           create: ((context) {
             return TabNavigatorModel(context.read(), context.read());
           }),
+          lazy: false,
         ),
         ChangeNotifierProvider<GlobalSettingsModel>(create: ((context) => _settingsModel)),
         ChangeNotifierProxyProvider<GlobalSettingsModel, TopPicksModel>(

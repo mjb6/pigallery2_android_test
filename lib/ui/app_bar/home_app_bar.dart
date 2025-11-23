@@ -26,15 +26,16 @@ class HomeAppBar extends StatelessWidget {
   const HomeAppBar({super.key});
 
   Set<AppBarAction> buildActions(BuildContext context) {
-    Set<AppBarAction> actions = {AppBarAction.sort};
+    Set<AppBarAction> actions = {};
 
     bool canGoBack = context.select<AppBarModel, bool>((it) => it.canGoBack);
     if (canGoBack) {
       actions.add(AppBarAction.back);
     }
+    
     final tab = context.select<TabStateModel, TabEntry>((it) => it.currentTab);
-
-    if (!canGoBack && tab != TabEntry.website) {
+    if (tab != TabEntry.website) {
+      actions.add(AppBarAction.sort);
       actions.add(AppBarAction.backdrop);
     }
     actions.add(AppBarAction.settings);

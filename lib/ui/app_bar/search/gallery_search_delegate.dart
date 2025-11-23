@@ -56,9 +56,9 @@ class GallerySearchDelegate extends SearchDelegate<String> {
   Widget buildResults(BuildContext context) {
     context.read<GalleryModelProvider>().model!.textSearch(query);
     return Provider.value(
-      value: TabEntry.albums, // todo
+      value: TabEntry.home,
       builder: (context, child) => ChangeNotifierProvider<GalleryModel>.value(
-        value: context.read<GalleryModelProvider>().getModelByTab(0), // todo
+        value: context.read<GalleryModelProvider>().getModelByTab(0),
         child: GalleryView(baseStackPosition + 1),
       ),
     );
@@ -70,9 +70,9 @@ class GallerySearchDelegate extends SearchDelegate<String> {
     GalleryModel model = context.read<GalleryModelProvider>().model!;
     int pos = model.stackPosition == baseStackPosition + 1 ? model.stackPosition : baseStackPosition;
     return Provider.value(
-      value: TabEntry.albums, // todo
+      value: TabEntry.home,
       builder: (context, child) => ChangeNotifierProvider<GalleryModel>.value(
-        value: context.read<GalleryModelProvider>().getModelByTab(0), // todo
+        value: context.read<GalleryModelProvider>().getModelByTab(0),
         child: GalleryView(pos),
       ),
     );

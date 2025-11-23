@@ -39,8 +39,9 @@ class TabNavigatorModel extends SafeChangeNotifier {
     } else {
       if (navigatorKeys[_currentTab]?.currentState?.canPop() != true) {
         SystemNavigator.pop();
+      } else {
+        navigatorKeys[_currentTab]?.currentState?.pop();
       }
-      navigatorKeys[_currentTab]?.currentState?.pop();
     }
     _appBarModel.handleBack();
   }

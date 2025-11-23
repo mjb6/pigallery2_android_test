@@ -3,6 +3,7 @@ import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 
+/// Provides the [GalleryModel] for the current tab to widgets above the tab view.
 class GalleryModelProvider extends SafeChangeNotifier {
   final List<GalleryModel> _models;
   final TabStateModel _tabStateModel;

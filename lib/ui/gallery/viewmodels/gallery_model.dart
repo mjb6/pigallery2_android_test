@@ -143,7 +143,7 @@ class GalleryModel extends SafeChangeNotifier {
     currentState.isLoading = false;
     if (result != null) {
       currentState.baseDirectory = result;
-      currentState.sortingKey ??= DirectorySortingKey(result.relativeApiPath);
+        currentState.sortingKey ??= DirectorySortingKey(result.relativeApiPath);
       currentState.sortOption = _sortOptionsRepository.getSortOption(currentState.sortingKey);
       currentState.items = [...result.directories, ...result.media];
     } else {
