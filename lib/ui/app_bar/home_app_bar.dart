@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/flatten_dir_button.dart';
-import 'package:pigallery2_android/ui/app_bar/actions/server_settings_action.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/sort_option_button.dart';
 import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_model.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
@@ -10,10 +9,11 @@ import 'package:pigallery2_android/ui/app_bar/actions/animated_backdrop_toggle_b
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_provider.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
+import 'package:pigallery2_android/ui/themes.dart';
 import 'package:pigallery2_android/util/system_ui.dart';
 import 'package:provider/provider.dart';
 
-enum AppBarAction { back, search, flatten, backdrop, settings, sort }
+enum AppBarAction { back, search, flatten, backdrop, sort }
 
 class AppBarState {
   final String title;
@@ -38,7 +38,6 @@ class HomeAppBar extends StatelessWidget {
       actions.add(AppBarAction.sort);
       actions.add(AppBarAction.backdrop);
     }
-    actions.add(AppBarAction.settings);
 
     bool isAlbumView = context.select<GalleryModelProvider, bool>((it) => it.model?.isAlbumView == true);
     if (isAlbumView) return actions;
@@ -61,6 +60,7 @@ class HomeAppBar extends StatelessWidget {
     final statusBarHeight = SystemUi.getPadding().top;
     return Container(
       padding: EdgeInsets.fromLTRB(6, statusBarHeight, 6, statusBarHeight == 0 ? 0 : 6),
+      height: statusBarHeight + toolbarHeight,
       color: theme.appBarTheme.backgroundColor,
       child: child,
     );
@@ -107,9 +107,6 @@ class _HomeAppBarInner extends StatelessWidget {
           icon: const Icon(Icons.search),
         ),
       );
-    }
-    if (state.actions.contains(AppBarAction.settings)) {
-      actions.add(IconButton(onPressed: () => showServerSettings(context), icon: const Icon(Icons.settings)));
     }
     if (state.actions.contains(AppBarAction.backdrop)) {
       actions.add(const AnimatedBackdropToggleButton());

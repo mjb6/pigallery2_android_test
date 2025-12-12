@@ -14,6 +14,7 @@ void showServerSettings(BuildContext context) {
     isScrollControlled: true,
     context: context,
     builder: (context) => SettingsBottomSheet(),
+    useRootNavigator: true
   ).whenComplete(() {
     if (!context.mounted) return;
     if (previousServerUrl == serverRepository.serverUrl) return;

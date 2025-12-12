@@ -13,6 +13,7 @@ class TabNavigatorModel extends SafeChangeNotifier {
   int _currentTab = 0;
   late VoidCallback _webViewBackHandler;
   final AppBarModel _appBarModel;
+  late Function(double) _navigateToFunction;
 
   TabNavigatorModel(this._tabStateModel, this._appBarModel) {
     _tabStateModel.addListener(_tabChangedListener);
@@ -30,6 +31,14 @@ class TabNavigatorModel extends SafeChangeNotifier {
 
   void registerWebViewBackHandler(VoidCallback handler) {
     _webViewBackHandler = handler;
+  }
+
+  void registerNavigateToFunction(Function(double) handler) {
+    _navigateToFunction = handler;
+  }
+
+  void navigateTo(double page) {
+    _navigateToFunction(page);
   }
 
   /// invoked before removing the stack from [model].

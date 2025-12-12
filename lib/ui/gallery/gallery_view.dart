@@ -66,26 +66,23 @@ class GalleryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Theme.of(context).colorScheme.surface,
-      child: Selector<GalleryModel, bool>(
-        selector: (context, model) => model.stateOf(stackPosition).isLoading,
-        builder: (context, isLoading, child) {
-          if (isLoading) return const LoadingIndicator();
-          return Selector<GalleryModel, String?>(
-            shouldRebuild: (String? previous, String? next) => true,
-            selector: (context, model) => model.stateOf(stackPosition).error,
-            builder: (BuildContext context, error, Widget? child) {
-              if (ModalRoute.of(context)?.isCurrent == true) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  checkForError(context, error);
-                });
-              }
-              return buildBody(context);
-            },
-          );
-        },
-      ),
+    return Selector<GalleryModel, bool>(
+      selector: (context, model) => model.stateOf(stackPosition).isLoading,
+      builder: (context, isLoading, child) {
+        if (isLoading) return const LoadingIndicator();
+        return Selector<GalleryModel, String?>(
+          shouldRebuild: (String? previous, String? next) => true,
+          selector: (context, model) => model.stateOf(stackPosition).error,
+          builder: (BuildContext context, error, Widget? child) {
+            if (ModalRoute.of(context)?.isCurrent == true) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                checkForError(context, error);
+              });
+            }
+            return buildBody(context);
+          },
+        );
+      },
     );
   }
 }

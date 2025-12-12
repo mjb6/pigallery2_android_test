@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
@@ -27,6 +29,7 @@ class WebsiteView extends StatelessWidget {
             navigator.pop();
           });
         },
+        gestureRecognizers: {Factory<VerticalDragGestureRecognizer>(() => VerticalDragGestureRecognizer())},
         initialUrlRequest: URLRequest(url: WebUri("$serverUrl/admin")),
         initialSettings: InAppWebViewSettings(
           forceDark: ForceDark.ON,
