@@ -28,7 +28,7 @@ class GalleryView extends StatelessWidget {
             ? null
             : SnackBarAction(
                 label: "Reload",
-                onPressed: model.fetchItems,
+                onPressed: model.fetch,
               ),
         content: Text(error),
         padding: const EdgeInsets.symmetric(

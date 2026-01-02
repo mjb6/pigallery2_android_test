@@ -39,6 +39,7 @@ import 'package:pigallery2_android/ui/top_picks/viewmodels/top_picks_model.dart'
 import 'package:pigallery2_android/ui/themes.dart';
 import 'package:pigallery2_android/ui/home/views/home_view.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import 'util/system_ui.dart';
 
@@ -176,12 +177,6 @@ class MyApp extends StatelessWidget {
             return AppBarModel(context.read(), context.read(), context.read());
           }),
         ),
-        ChangeNotifierProvider<TabNavigatorModel>(
-          create: ((context) {
-            return TabNavigatorModel(context.read(), context.read());
-          }),
-          lazy: false,
-        ),
         ChangeNotifierProvider<GlobalSettingsModel>(create: ((context) => _settingsModel)),
         ChangeNotifierProxyProvider<GlobalSettingsModel, TopPicksModel>(
           create: ((context) {
@@ -193,6 +188,12 @@ class MyApp extends StatelessWidget {
             }
             return previous..update(model.topPicksDaysLength, model.showTopPicks);
           },
+        ),
+        ChangeNotifierProvider<TabNavigatorModel>(
+          create: ((context) {
+            return TabNavigatorModel(context.read(), context.read(), context.read(), context.read());
+          }),
+          lazy: false,
         ),
       ],
       child: Selector<GlobalSettingsModel, bool>(
@@ -210,22 +211,27 @@ class MyApp extends StatelessWidget {
                   thumbVisibility: WidgetStateProperty.all(true),
                   thumbColor: WidgetStateProperty.all(colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
                 ),
-                pageTransitionsTheme: const PageTransitionsTheme(
-                  builders: {TargetPlatform.android: PredictiveBackPageTransitionsBuilder()},
-                ),
                 tabBarTheme: CustomThemeData.tabBarTheme(colorScheme),
               );
             }
             WidgetsBinding.instance.addPostFrameCallback((_) {
               SystemUi.setDefaultSystemBarColors(context);
             });
-            return MaterialApp(
-              debugShowCheckedModeBanner: false,
-              title: 'PiGallery2',
-              themeMode: ThemeMode.dark,
-              theme: themeData,
-              darkTheme: themeData,
-              home: HomeView(),
+            return RefreshConfiguration(
+              // https://github.com/peng8350/flutter_pulltorefresh/issues/656#issuecomment-2966048816
+              springDescription: const SpringDescription(
+                mass: 1,
+                stiffness: 364.718677686,
+                damping: 35.2,
+              ),
+              child: MaterialApp(
+                debugShowCheckedModeBanner: false,
+                title: 'PiGallery2',
+                themeMode: ThemeMode.dark,
+                theme: themeData,
+                darkTheme: themeData,
+                home: HomeView(),
+              ),
             );
           },
         ),

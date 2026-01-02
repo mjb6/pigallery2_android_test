@@ -19,15 +19,12 @@ class WebsiteView extends StatelessWidget {
     if (serverUrl == null) {
       return SizedBox.shrink();
     }
-    NavigatorState navigator = Navigator.of(context);
     return PopScope(
       canPop: false,
       child: InAppWebView(
         key: ValueKey(serverUrl),
         onWebViewCreated: (controller) {
-          context.read<TabNavigatorModel>().registerWebViewBackHandler(() {
-            navigator.pop();
-          });
+          tabNavigatorModel.unregisterWebViewBackHandler();
         },
         gestureRecognizers: {Factory<VerticalDragGestureRecognizer>(() => VerticalDragGestureRecognizer())},
         initialUrlRequest: URLRequest(url: WebUri("$serverUrl/admin")),
@@ -45,9 +42,7 @@ class WebsiteView extends StatelessWidget {
               controller.goBack();
             });
           } else {
-            tabNavigatorModel.registerWebViewBackHandler(() {
-              navigator.pop();
-            });
+            tabNavigatorModel.unregisterWebViewBackHandler();
           }
           webViewModel.canGoBack = canGoBack;
         },

@@ -1,5 +1,4 @@
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
-import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 
@@ -44,17 +43,12 @@ class GalleryModelProvider extends SafeChangeNotifier {
     notifyListeners();
   }
 
-  void refresh() {
-    for (var key in navigatorKeys.values) {
-      while (key.currentState?.canPop() == true) {
-        key.currentState!.pop();
-      }
-    }
+  Future<void> reset() async {
     for (var model in _models) {
       while(model.stackPosition > 0) {
         model.popStack();
       }
-      model.fetchItems();
+      await model.fetch();
     }
   }
 }

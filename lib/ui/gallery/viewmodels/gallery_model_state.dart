@@ -5,6 +5,25 @@ import 'package:pigallery2_android/domain/models/sort_option.dart';
 import 'package:pigallery2_android/domain/repositories/sort_options_repository.dart';
 import 'package:pigallery2_android/util/extensions.dart';
 
+sealed class GalleryModelStateType {}
+
+class DirectoryGalleryModelStateType extends GalleryModelStateType {}
+
+class SearchGalleryModelStateType extends GalleryModelStateType {
+  final Directory? directory;
+  final String searchText;
+
+  SearchGalleryModelStateType({required this.directory, required this.searchText});
+}
+
+class FlattenGalleryModelStateType extends GalleryModelStateType {
+  final Directory? target;
+
+  FlattenGalleryModelStateType({required this.target});
+}
+
+class TopPicksGalleryModelStateType extends GalleryModelStateType {}
+
 /// Represents the data to be displayed for the current [HomeView].
 class GalleryModelState {
   /// [Directory] received from the backend.
@@ -50,14 +69,24 @@ class GalleryModelState {
   /// [Null] if nothing fetched yet or no server configured.
   SortingKey? sortingKey;
 
-  GalleryModelState(this.baseDirectory, SortOptionsRepository repo)
-    : sortingKey = baseDirectory?.let((it) => DirectorySortingKey(it.relativeApiPath)) {
-    _sortOption = repo.getSortOption(sortingKey);
-  }
+  final GalleryModelStateType type;
 
-  GalleryModelState.searching(SortOptionsRepository repo, this.sortingKey, {String? title, this.baseDirectory})
-    : _title = title,
-      isSearching = true {
+  GalleryModelState(this.type, this.baseDirectory, SortOptionsRepository repo) {
+    switch (type) {
+      case DirectoryGalleryModelStateType():
+        sortingKey = baseDirectory?.let((it) => DirectorySortingKey(it.relativeApiPath));
+      case SearchGalleryModelStateType(:final searchText):
+        _title = searchText;
+        isSearching = true;
+        sortingKey = SearchSortingKey();
+      case FlattenGalleryModelStateType(:final target):
+        _title = target?.name;
+        isSearching = true;
+        sortingKey = FlattenSortingKey();
+      case TopPicksGalleryModelStateType():
+        isSearching = true;
+        sortingKey = TopPicksSortingKey();
+    }
     _sortOption = repo.getSortOption(sortingKey);
   }
 
@@ -119,5 +148,6 @@ class GalleryModelState {
       return _compareItems(a, b, null);
     };
   }
+
   //endregion
 }

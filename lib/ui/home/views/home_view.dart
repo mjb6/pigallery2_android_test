@@ -8,7 +8,6 @@ import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_provider.
 import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
 import 'package:pigallery2_android/ui/home/views/glass_nav_bar.dart';
 import 'package:pigallery2_android/ui/home/views/home_view_front.dart';
-import 'package:pigallery2_android/ui/home/views/swipe_hide_nav_bar.dart';
 import 'package:pigallery2_android/ui/themes.dart';
 import 'package:pigallery2_android/ui/app_bar/views/back_layer.dart';
 import 'package:pigallery2_android/ui/app_bar/home_app_bar.dart';
@@ -16,6 +15,8 @@ import 'package:pigallery2_android/util/system_ui.dart';
 import 'package:provider/provider.dart';
 
 class HomeView extends StatelessWidget {
+  const HomeView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -30,33 +31,33 @@ class HomeView extends StatelessWidget {
         frontLayerBorderRadius: BorderRadius.zero,
         keepFrontLayerActive: true,
         stickyFrontLayer: true,
-        frontLayer: SwipeHideNavBarWrapper(
-          navBarHeight: GlassNavBarTheme.barHeight + GlassNavBarTheme.bottomPadding,
-          screenContent: HomeViewFront(),
-          swipeThreshold: 70,
-          navBar: GlassNavBar(
-            tabIcons: [
-              Ionicons.image_outline,
-              Ionicons.images_outline,
-              Ionicons.globe_outline,
-            ],
-            actions: [
-              Icons.settings
-            ],
-            onTap: (i) async {
-              if (i == 0) {
-                showServerSettings(context);
-              } else if (i == 1) {
-                GalleryModel model = context.read<GalleryModelProvider>().model!;
-                model.startSearch();
-                await showSearch(context: context, delegate: GallerySearchDelegate(0));
-                /// transitionDuration of _SearchPageRoute is 300ms
-                Future.delayed(Duration(milliseconds: 300)).then((it) {
-                  model.stopSearch();
-                });
-              }
-            },
-          ),
+        frontLayer: Stack(
+          fit: StackFit.expand,
+          children: [
+            HomeViewFront(),
+            GlassNavBar(
+              tabIcons: [
+                Ionicons.image_outline,
+                Ionicons.images_outline,
+                Ionicons.globe_outline,
+              ],
+              actions: [Icons.settings],
+              onTap: (i) async {
+                if (i == 0) {
+                  showServerSettings(context);
+                } else if (i == 1) {
+                  GalleryModel model = context.read<GalleryModelProvider>().model!;
+                  model.startSearch();
+                  await showSearch(context: context, delegate: GallerySearchDelegate(0));
+
+                  /// transitionDuration of _SearchPageRoute is 300ms
+                  Future.delayed(Duration(milliseconds: 300)).then((it) {
+                    model.stopSearch();
+                  });
+                }
+              },
+            ),
+          ],
         ),
         backLayer: Padding(
           padding: EdgeInsets.zero,

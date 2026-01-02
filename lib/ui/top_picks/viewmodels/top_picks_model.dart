@@ -29,7 +29,7 @@ class TopPicksModel extends SafeChangeNotifier {
   String? _currentServerUrl;
 
   /// Whether the top picks have been retrieved for the current server and are empty.
-  bool get isUpToDateAndEmpty => _content.isEmpty && _currentServerUrl != null && _currentServerUrl == _serverRepository.serverUrl;
+  bool get isUpToDateAndEmpty => _content.isEmpty && _currentServerUrl == _serverRepository.serverUrl;
 
   bool get isLoading => _isLoading;
 
@@ -53,26 +53,30 @@ class TopPicksModel extends SafeChangeNotifier {
     return mediaByYear;
   }
 
-  void _fetch() {
+  Future<void> _fetch() async {
     _isLoading = true;
     notifyListeners();
     _currentRequest = CancelableOperation.fromFuture(_fetchTopPicks(_daysLength)).then((value) {
-      _isLoading = false;
       _content = _groupMedia(value?.media ?? []);
       notifyListeners();
+      Future.delayed(Duration(milliseconds: 200)).then((_) {
+        _isLoading = false;
+        notifyListeners();
+      });
     });
+    await _currentRequest?.valueOrCancellation();
   }
 
   /// Inform about changes to [daysLength] and [showTopPicks].
   /// Only fetches from [ItemRepository] if
   /// - showTopPicks is true and
   /// - [daysLength] or the current server url have changed.
-  void update(int daysLength, bool showTopPicks) {
+  Future<void> update(int daysLength, bool showTopPicks) async {
     _showTopPicks = showTopPicks;
     String? serverUrl = _serverRepository.serverUrl;
     if (_daysLength == daysLength && _currentServerUrl == serverUrl) {
       // nothing changed
-      return;
+      // return;
     }
     if (!showTopPicks) return; // only fetch if top picks are visible
     _daysLength = daysLength;
@@ -85,13 +89,13 @@ class TopPicksModel extends SafeChangeNotifier {
       notifyListeners();
       return;
     }
-    _fetch();
+    await _fetch();
   }
 
   /// Refresh the state in case the serverUrl has changed.
-  void refresh() {
+  Future<void> refresh() async {
     if (_showTopPicks) {
-      update(_daysLength, _showTopPicks);
+      await update(_daysLength, _showTopPicks);
     } else {
       _content = {};
     }

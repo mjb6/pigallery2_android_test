@@ -1,6 +1,5 @@
 import 'package:pigallery2_android/data/storage/models/sort_option.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
-import 'package:pigallery2_android/data/backend/api_service.dart';
 import 'package:async/async.dart';
 import 'package:pigallery2_android/domain/models/sort_option.dart';
 import 'package:pigallery2_android/domain/repositories/album_repository.dart';
@@ -18,8 +17,8 @@ class GalleryModel extends SafeChangeNotifier {
   final bool isAlbumView;
 
   GalleryModel(this._albumRepository, this._itemRepository, this._sortOptionsRepository, this.isAlbumView)
-    : _state = [GalleryModelState(null, _sortOptionsRepository)] {
-    fetchItems();
+    : _state = [GalleryModelState(DirectoryGalleryModelStateType(), null, _sortOptionsRepository)] {
+    fetch();
   }
 
   /// [GalleryModelState] of the given position in the [Navigator] stack.
@@ -102,8 +101,8 @@ class GalleryModel extends SafeChangeNotifier {
 
   /// Register a new [HomeView] instance.
   void addStack(Directory baseDirectory) {
-    _addStack(GalleryModelState(baseDirectory, _sortOptionsRepository));
-    fetchItems();
+    _addStack(GalleryModelState(DirectoryGalleryModelStateType(), baseDirectory, _sortOptionsRepository));
+    fetch();
   }
 
   /// Unregister a closed [HomeView] instance.
@@ -132,18 +131,12 @@ class GalleryModel extends SafeChangeNotifier {
     notifyListeners();
   }
 
-  void topPicksSearch(Directory directory) {
-    _addStack(GalleryModelState.searching(_sortOptionsRepository, TopPicksSortingKey(), baseDirectory: directory));
-    currentState.items = directory.media;
-    notifyListeners();
-  }
-
   /// Update [currentState] to represent the given [Directory].
   void _updateCurrentState(Directory? result) {
     currentState.isLoading = false;
     if (result != null) {
       currentState.baseDirectory = result;
-        currentState.sortingKey ??= DirectorySortingKey(result.relativeApiPath);
+      currentState.sortingKey ??= DirectorySortingKey(result.relativeApiPath);
       currentState.sortOption = _sortOptionsRepository.getSortOption(currentState.sortingKey);
       currentState.items = [...result.directories, ...result.media];
     } else {
@@ -165,9 +158,9 @@ class GalleryModel extends SafeChangeNotifier {
   }
 
   /// Perform the given api request & update the state according to the progress/result.
-  Future<void> _apiRequest(CancelableOperation<Directory?> request) async {
+  Future<void> _apiRequest(CancelableOperation<Directory?> request, bool isRefresh) async {
     currentState.error = null;
-    _setIsLoadingDelayed(_currentRequest);
+    if (!isRefresh) _setIsLoadingDelayed(_currentRequest);
 
     return request.then((result) {
       _updateCurrentState(result);
@@ -176,12 +169,12 @@ class GalleryModel extends SafeChangeNotifier {
   }
 
   /// Cancels the previous request when invoking the given [request].
-  void _cancelableApiRequest(Future<Directory?> Function() request) async {
+  Future<void> _cancelableApiRequest(Future<Directory?> Function() request, bool isRefresh) async {
     _currentRequest?.cancel();
     try {
       CancelableOperation<Directory?> cancelableRequest = CancelableOperation.fromFuture(request());
       _currentRequest = cancelableRequest;
-      await _apiRequest(cancelableRequest);
+      await _apiRequest(cancelableRequest, isRefresh);
     } on Exception catch (e) {
       _updateCurrentState(null);
       currentState.error = e.toString();
@@ -190,10 +183,14 @@ class GalleryModel extends SafeChangeNotifier {
     }
   }
 
-  /// Request [Item]s from the [ApiService] for the current [HomeView] screen.
-  /// Result will be available via [currentState].
-  void fetchItems() {
-    _cancelableApiRequest(() {
+  Future<void> fetch({bool isRefresh = false}) => switch (currentState.type) {
+    SearchGalleryModelStateType(:final directory, :final searchText) => _cancelableApiRequest(() {
+      return _itemRepository.search(directory, searchText);
+    }, isRefresh),
+    FlattenGalleryModelStateType(:final target) => _cancelableApiRequest(() {
+      return _itemRepository.flattenDirectory(target);
+    }, isRefresh),
+    DirectoryGalleryModelStateType() => _cancelableApiRequest(() {
       if (stackPosition == 0 && isAlbumView) {
         return _albumRepository.getAlbums();
       }
@@ -202,29 +199,32 @@ class GalleryModel extends SafeChangeNotifier {
         return _albumRepository.getAlbumContent(baseDirectory);
       }
       return _itemRepository.getDirectories(path: baseDirectory?.relativeApiPath);
-    });
-  }
+    }, isRefresh),
+    _ => Future.value(),
+  };
 
   /// Start a search for the given text [searchText].
   /// Result will be available via [currentState].
   void textSearch(String searchText) {
     if (!currentState.isSearching) {
-      _addStack(GalleryModelState.searching(_sortOptionsRepository, SearchSortingKey(), title: searchText));
+      var type = SearchGalleryModelStateType(directory: currentState.baseDirectory, searchText: searchText);
+      _addStack(GalleryModelState(type, null, _sortOptionsRepository));
     }
-    Directory? baseDir;
-    if (stackPosition > 1) baseDir = _state.reversed.skip(1).first.baseDirectory;
-    _cancelableApiRequest(() {
-      return _itemRepository.search(baseDir, searchText);
-    });
+    fetch();
   }
 
   /// Flatten the current directory.
   /// Result will be available via [currentState].
   void flattenDir() {
-    Directory? dirToFlatten = currentState.baseDirectory;
-    _addStack(GalleryModelState.searching(_sortOptionsRepository, FlattenSortingKey(), title: dirToFlatten?.name));
-    _cancelableApiRequest(() {
-      return _itemRepository.flattenDirectory(dirToFlatten);
-    });
+    var type = FlattenGalleryModelStateType(target: currentState.baseDirectory);
+    _addStack(GalleryModelState(type, null, _sortOptionsRepository));
+    fetch();
+  }
+
+  /// Add a new stack displaying the content of the given [directory]. No api requests done here.
+  void topPicksSearch(Directory directory) {
+    _addStack(GalleryModelState(TopPicksGalleryModelStateType(), directory, _sortOptionsRepository));
+    currentState.items = directory.media;
+    notifyListeners();
   }
 }

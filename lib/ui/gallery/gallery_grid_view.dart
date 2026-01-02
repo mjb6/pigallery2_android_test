@@ -10,6 +10,7 @@ import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_scroll_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/seeking/video_seek_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/seeking/video_seek_preview_model.dart';
+import 'package:pigallery2_android/ui/home/views/refresh_wrapper.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
@@ -146,31 +147,37 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
   Widget build(BuildContext context) {
     GlobalSettingsModel model = Provider.of<GlobalSettingsModel>(context);
     return OrientationBuilder(
-      builder: (context, orientation) => GridView.builder(
-        key: PageStorageKey(widget.stackPosition),
-        controller: _scrollController,
-        itemCount: widget.items.length,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: model.getGridCrossAxisCount(orientation),
-          crossAxisSpacing: model.gridSpacing.toDouble(),
-          mainAxisSpacing: model.gridSpacing.toDouble(),
-          childAspectRatio: model.gridAspectRatio,
+      builder: (context, orientation) => Container(
+        color: Colors.black,
+        child: RefreshWrapper(
+          scrollController: _scrollController,
+          child: GridView.builder(
+            key: PageStorageKey(widget.stackPosition),
+            controller: _scrollController,
+            itemCount: widget.items.length,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: model.getGridCrossAxisCount(orientation),
+              crossAxisSpacing: model.gridSpacing.toDouble(),
+              mainAxisSpacing: model.gridSpacing.toDouble(),
+              childAspectRatio: model.gridAspectRatio,
+            ),
+            itemBuilder: (BuildContext context, int index) {
+              Item item = widget.items[index];
+              return item is Directory
+                  ? DirectoryItem(
+                      dir: item,
+                      borderRadius: model.gridRoundedCorners,
+                      showDirectoryItemCount: model.showDirectoryItemCount,
+                      onTap: () => openDirectory(context, item),
+                    )
+                  : MediaItem(
+                      item: item as Media,
+                      borderRadius: model.gridRoundedCorners,
+                      onTap: () => openFullscreen(context, widget.items, index),
+                    );
+            },
+          ),
         ),
-        itemBuilder: (BuildContext context, int index) {
-          Item item = widget.items[index];
-          return item is Directory
-              ? DirectoryItem(
-                  dir: item,
-                  borderRadius: model.gridRoundedCorners,
-                  showDirectoryItemCount: model.showDirectoryItemCount,
-                  onTap: () => openDirectory(context, item),
-                )
-              : MediaItem(
-                  item: item as Media,
-                  borderRadius: model.gridRoundedCorners,
-                  onTap: () => openFullscreen(context, widget.items, index),
-                );
-        },
       ),
     );
   }

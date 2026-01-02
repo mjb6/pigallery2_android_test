@@ -39,7 +39,7 @@ class _TopPicksImageWrapperState extends State<TopPicksImageWrapper> with Ticker
           gradient: LinearGradient(
             colors: [
               Theme.of(context).colorScheme.onSurfaceVariant,
-              Theme.of(context).colorScheme.surfaceContainerHighest,
+              Theme.of(context).colorScheme.surface,
             ],
             stops: const [0, 1],
           ),

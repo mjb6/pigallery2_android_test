@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
-import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_provider.dart';
+import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/web_view_model.dart';
 import 'package:pigallery2_android/ui/settings/views/settings_bottom_sheet.dart';
 import 'package:pigallery2_android/ui/top_picks/viewmodels/top_picks_model.dart';
@@ -18,8 +18,8 @@ void showServerSettings(BuildContext context) {
   ).whenComplete(() {
     if (!context.mounted) return;
     if (previousServerUrl == serverRepository.serverUrl) return;
-    context.read<GalleryModelProvider>().refresh();
+    context.read<TabNavigatorModel>().reset();
     context.read<WebViewModel>().updateUrl();
-    Provider.of<TopPicksModel>(context, listen: false).refresh();
+    context.read<TopPicksModel>().refresh();
   });
 }
