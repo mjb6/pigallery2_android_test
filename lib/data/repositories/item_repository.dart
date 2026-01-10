@@ -52,7 +52,13 @@ class ItemRepositoryImpl implements ItemRepository {
   @override
   Future<Directory?> flattenDirectory(Directory? dir) async {
     String path = dir?.relativeApiPath ?? ".";
-    BackendDirectory? result = (await _api.search(TextSearch(SearchQueryTypes.directory, path)))?.toDirectory(path);
+    TextSearch query;
+    if (path.isEmpty || path == ".") {
+      query = TextSearch(SearchQueryTypes.anyText, "");
+    } else {
+      query = TextSearch(SearchQueryTypes.directory, path);
+    }
+    BackendDirectory? result = (await _api.search(query))?.toDirectory(path);
     result?.directories.clear();
     return result?.let((it) => Directory.fromBackend(result));
   }
