@@ -24,7 +24,7 @@ class GalleryViewGridView extends StatefulWidget {
   final int stackPosition;
   final List<Item> items;
 
-  GalleryViewGridView(this.stackPosition, this.items) : super(key: ValueKey(stackPosition));
+  GalleryViewGridView(this.stackPosition, this.items) : super(key: ValueKey(items));
 
   @override
   State<GalleryViewGridView> createState() => _GalleryViewGridViewState();
@@ -32,11 +32,25 @@ class GalleryViewGridView extends StatefulWidget {
 
 class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerProviderStateMixin {
   late ScrollController _scrollController;
+  late List<Item> items;
+  int chunkSize = 100;
 
   @override
   void initState() {
+    items = widget.items.take(chunkSize).toList();
     super.initState();
     _scrollController = ScrollController(initialScrollOffset: 0.0);
+    _scrollController.addListener(() {
+      // adding items dynamically based on scroll position
+      // otherwise GridView.builder initializes all widgets upfront, which may take a long time
+      if (_scrollController.position.extentAfter < 500) {
+        if (items.length < widget.items.length) {
+          setState(() {
+            items.addAll(widget.items.skip(items.length).take(chunkSize));
+          });
+        }
+      }
+    });
   }
 
   double _getImageHeight(BuildContext context) {
@@ -151,33 +165,33 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
       builder: (context, orientation) => Container(
         color: Colors.black,
         child: GalleryErrorScreen(
-        child: RefreshWrapper(
-          scrollController: _scrollController,
-          child: GridView.builder(
-            key: PageStorageKey(widget.stackPosition),
-            controller: _scrollController,
-            itemCount: widget.items.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: model.getGridCrossAxisCount(orientation),
-              crossAxisSpacing: model.gridSpacing.toDouble(),
-              mainAxisSpacing: model.gridSpacing.toDouble(),
-              childAspectRatio: model.gridAspectRatio,
-            ),
-            itemBuilder: (BuildContext context, int index) {
-              Item item = widget.items[index];
-              return item is Directory
-                  ? DirectoryItem(
-                      dir: item,
-                      borderRadius: model.gridRoundedCorners,
-                      showDirectoryItemCount: model.showDirectoryItemCount,
-                      onTap: () => openDirectory(context, item),
-                    )
-                  : MediaItem(
-                      item: item as Media,
-                      borderRadius: model.gridRoundedCorners,
-                      onTap: () => openFullscreen(context, widget.items, index),
-                    );
-            },
+          child: RefreshWrapper(
+            scrollController: _scrollController,
+            child: GridView.builder(
+              key: PageStorageKey(widget.stackPosition),
+              controller: _scrollController,
+              itemCount: items.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: model.getGridCrossAxisCount(orientation),
+                crossAxisSpacing: model.gridSpacing.toDouble(),
+                mainAxisSpacing: model.gridSpacing.toDouble(),
+                childAspectRatio: model.gridAspectRatio,
+              ),
+              itemBuilder: (BuildContext context, int index) {
+                Item item = items[index];
+                return item is Directory
+                    ? DirectoryItem(
+                        dir: item,
+                        borderRadius: model.gridRoundedCorners,
+                        showDirectoryItemCount: model.showDirectoryItemCount,
+                        onTap: () => openDirectory(context, item),
+                      )
+                    : MediaItem(
+                        item: item as Media,
+                        borderRadius: model.gridRoundedCorners,
+                        onTap: () => openFullscreen(context, items, index),
+                      );
+              },
             ),
           ),
         ),
