@@ -10,6 +10,7 @@ import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/fullscreen_scroll_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/seeking/video_seek_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video/seeking/video_seek_preview_model.dart';
+import 'package:pigallery2_android/ui/home/views/error_screen.dart';
 import 'package:pigallery2_android/ui/home/views/refresh_wrapper.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/global_settings_model.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
@@ -149,6 +150,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
     return OrientationBuilder(
       builder: (context, orientation) => Container(
         color: Colors.black,
+        child: GalleryErrorScreen(
         child: RefreshWrapper(
           scrollController: _scrollController,
           child: GridView.builder(
@@ -176,6 +178,7 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
                       onTap: () => openFullscreen(context, widget.items, index),
                     );
             },
+            ),
           ),
         ),
       ),

@@ -6,6 +6,7 @@ import 'package:pigallery2_android/domain/repositories/album_repository.dart';
 import 'package:pigallery2_android/domain/repositories/item_repository.dart';
 import 'package:pigallery2_android/domain/repositories/sort_options_repository.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
+import 'package:pigallery2_android/util/strings.dart';
 
 import 'gallery_model_state.dart';
 
@@ -177,7 +178,7 @@ class GalleryModel extends SafeChangeNotifier {
       await _apiRequest(cancelableRequest, isRefresh);
     } on Exception catch (e) {
       _updateCurrentState(null);
-      currentState.error = e.toString();
+      currentState.error = e.toString().replaceAll(Strings.exceptionPrefix, "");
       notifyListeners();
       return Future.value();
     }

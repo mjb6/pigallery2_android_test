@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -57,7 +58,11 @@ class MyWidgetsBinding extends WidgetsFlutterBinding {
 }
 
 void setupLogging() {
-  Logger.root.level = Level.ALL;
+  if (kDebugMode) {
+    Logger.root.level = Level.ALL;
+  } else {
+    Logger.root.level = Level.INFO;
+  }
   Logger.root.onRecord.listen((record) {
     final errorMessage = record.error?.let((it) => ': $it\n${record.stackTrace}') ?? '';
     print('${record.level.name}: ${record.loggerName}: ${record.message}$errorMessage');

@@ -6,6 +6,8 @@ import 'package:pigallery2_android/data/storage/shared_prefs_storage.dart';
 import 'package:pigallery2_android/data/storage/storage_key.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/web_view_model.dart';
+import 'package:pigallery2_android/ui/home/views/error_screen.dart';
+import 'package:pigallery2_android/util/strings.dart';
 import 'package:provider/provider.dart';
 
 class WebsiteView extends StatelessWidget {
@@ -17,7 +19,7 @@ class WebsiteView extends StatelessWidget {
     WebViewModel webViewModel = context.read<WebViewModel>();
     String? serverUrl = context.select<WebViewModel, String?>((it) => it.serverUrl);
     if (serverUrl == null) {
-      return SizedBox.shrink();
+      return ErrorScreen(error: Strings.errorNoServerConfigured);
     }
     return PopScope(
       canPop: false,
