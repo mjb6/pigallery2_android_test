@@ -1,4 +1,6 @@
 import 'package:collection/collection.dart';
+import 'package:pigallery2_android/data/backend/models/search/search.dart';
+import 'package:pigallery2_android/data/backend/models/search/search_query_parser.dart';
 import 'package:pigallery2_android/data/storage/models/sort_option.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/domain/models/sort_option.dart';
@@ -10,10 +12,9 @@ sealed class GalleryModelStateType {}
 class DirectoryGalleryModelStateType extends GalleryModelStateType {}
 
 class SearchGalleryModelStateType extends GalleryModelStateType {
-  final Directory? directory;
-  final String searchText;
+  final SearchQueryDTO query;
 
-  SearchGalleryModelStateType({required this.directory, required this.searchText});
+  SearchGalleryModelStateType({required this.query});
 }
 
 class FlattenGalleryModelStateType extends GalleryModelStateType {
@@ -69,14 +70,14 @@ class GalleryModelState {
   /// [Null] if nothing fetched yet or no server configured.
   SortingKey? sortingKey;
 
-  final GalleryModelStateType type;
+  GalleryModelStateType type;
 
   GalleryModelState(this.type, this.baseDirectory, SortOptionsRepository repo) {
     switch (type) {
       case DirectoryGalleryModelStateType():
         sortingKey = baseDirectory?.let((it) => DirectorySortingKey(it.relativeApiPath));
-      case SearchGalleryModelStateType(:final searchText):
-        _title = searchText;
+      case SearchGalleryModelStateType(:final query):
+        _title = SearchQueryParser().stringify(query);
         isSearching = true;
         sortingKey = SearchSortingKey();
       case FlattenGalleryModelStateType(:final target):

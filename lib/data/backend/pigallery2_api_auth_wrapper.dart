@@ -1,6 +1,7 @@
 import 'package:pigallery2_android/data/backend/api_service.dart';
 import 'package:pigallery2_android/data/backend/models/album.dart';
 import 'package:pigallery2_android/data/backend/models/api_response.dart';
+import 'package:pigallery2_android/data/backend/models/search/auto_complete.dart';
 import 'package:pigallery2_android/data/backend/models/search/search.dart';
 import 'package:pigallery2_android/data/backend/models/search/search_result.dart';
 import 'package:pigallery2_android/data/storage/credential_storage.dart';
@@ -86,19 +87,35 @@ class PiGallery2ApiAuthWrapper implements ApiService {
   }
 
   @override
-  Future<BackendDirectory?> getDirectories({String? path}) async {
-    return _requestWithAuth((String url, SessionData? sessionData) => _api.getDirectories(serverUrl: url, path: path, sessionData: sessionData));
+  Future<BackendDirectory?> getDirectories({String? path}) {
+    return _requestWithAuth(
+      (String url, SessionData? sessionData) =>
+          _api.getDirectories(serverUrl: url, path: path, sessionData: sessionData),
+    );
   }
 
   @override
-  Future<SearchResult?> search(SearchQueryDTO query) async {
-    return _requestWithAuth((String url, SessionData? sessionData) => _api.search(serverUrl: url, query: query, sessionData: sessionData));
+  Future<SearchResult?> search(SearchQueryDTO query) {
+    return _requestWithAuth(
+      (String url, SessionData? sessionData) => _api.search(serverUrl: url, query: query, sessionData: sessionData),
+    );
   }
 
   @override
   Future<List<AlbumBaseDto>> getAlbums() async {
-    List<AlbumBaseDto>? albums = await _requestWithAuth((String url, SessionData? sessionData) => _api.getAlbums(serverUrl: url, sessionData: sessionData));
+    List<AlbumBaseDto>? albums = await _requestWithAuth(
+      (String url, SessionData? sessionData) => _api.getAlbums(serverUrl: url, sessionData: sessionData),
+    );
     return albums ?? [];
+  }
+
+  @override
+  Future<List<AutoCompleteItem>> autoComplete(AutoCompleteItem request) async {
+    var result = await _requestWithAuth(
+      (String url, SessionData? sessionData) =>
+          _api.autoComplete(serverUrl: url, request: request, sessionData: sessionData),
+    );
+    return result ?? [];
   }
 
   @override

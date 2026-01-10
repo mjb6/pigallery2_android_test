@@ -96,7 +96,10 @@ class _HomeAppBarInner extends StatelessWidget {
             model.startSearch();
             await showSearch(
               context: context,
-              delegate: GallerySearchDelegate(context.read<GalleryModelProvider>().model!.stackPosition),
+              delegate: GallerySearchDelegate(
+                model.stackPosition,
+                baseDirectory: model.currentState.baseDirectory,
+              ),
             );
 
             /// transitionDuration of _SearchPageRoute is 300ms

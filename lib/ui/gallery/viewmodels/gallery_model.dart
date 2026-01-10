@@ -1,3 +1,4 @@
+import 'package:pigallery2_android/data/backend/models/search/search.dart';
 import 'package:pigallery2_android/data/storage/models/sort_option.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:async/async.dart';
@@ -185,8 +186,8 @@ class GalleryModel extends SafeChangeNotifier {
   }
 
   Future<void> fetch({bool isRefresh = false}) => switch (currentState.type) {
-    SearchGalleryModelStateType(:final directory, :final searchText) => _cancelableApiRequest(() {
-      return _itemRepository.search(directory, searchText);
+    SearchGalleryModelStateType(:final query) => _cancelableApiRequest(() {
+      return _itemRepository.search(query);
     }, isRefresh),
     FlattenGalleryModelStateType(:final target) => _cancelableApiRequest(() {
       return _itemRepository.flattenDirectory(target);
@@ -204,12 +205,13 @@ class GalleryModel extends SafeChangeNotifier {
     _ => Future.value(),
   };
 
-  /// Start a search for the given text [searchText].
   /// Result will be available via [currentState].
-  void textSearch(String searchText) {
+  void search(SearchQueryDTO query) {
     if (!currentState.isSearching) {
-      var type = SearchGalleryModelStateType(directory: currentState.baseDirectory, searchText: searchText);
+      var type = SearchGalleryModelStateType(query: query);
       _addStack(GalleryModelState(type, null, _sortOptionsRepository));
+    } else {
+      currentState.type = SearchGalleryModelStateType(query: query);
     }
     fetch();
   }

@@ -48,7 +48,13 @@ class HomeView extends StatelessWidget {
                 } else if (i == 1) {
                   GalleryModel model = context.read<GalleryModelProvider>().model!;
                   model.startSearch();
-                  await showSearch(context: context, delegate: GallerySearchDelegate(0));
+                  await showSearch(
+                    context: context,
+                    delegate: GallerySearchDelegate(
+                      0,
+                      baseDirectory: model.currentState.baseDirectory,
+                    ),
+                  );
 
                   /// transitionDuration of _SearchPageRoute is 300ms
                   Future.delayed(Duration(milliseconds: 300)).then((it) {
