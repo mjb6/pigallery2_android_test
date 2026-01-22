@@ -4,16 +4,16 @@ import 'package:pigallery2_android/ui/app_bar/actions/flatten_dir_button.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/sort_option_button.dart';
 import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_model.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
-import 'package:pigallery2_android/ui/app_bar/search/gallery_search_delegate.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/animated_backdrop_toggle_button.dart';
-import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_provider.dart';
+import 'package:pigallery2_android/ui/app_bar/search/search_app_bar_title.dart';
+import 'package:pigallery2_android/ui/home/viewmodels/tab_models_provider.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
 import 'package:pigallery2_android/ui/themes.dart';
 import 'package:pigallery2_android/util/system_ui.dart';
 import 'package:provider/provider.dart';
 
-enum AppBarAction { back, search, flatten, backdrop, sort }
+enum AppBarAction { back, search, clearSearch, flatten, backdrop, sort }
 
 class AppBarState {
   final String title;
@@ -29,23 +29,37 @@ class HomeAppBar extends StatelessWidget {
     Set<AppBarAction> actions = {};
 
     bool canGoBack = context.select<AppBarModel, bool>((it) => it.canGoBack);
-    if (canGoBack) {
+    bool isSearchOverlayShown = context.select<TabModelsProvider, bool>(
+      (it) => it.searchModel?.showOverlay == true,
+    );
+    bool isSearchResultShown = context.select<TabModelsProvider, bool>(
+      (it) => it.model?.currentState.isSearching == true,
+    );
+    if (canGoBack || isSearchOverlayShown) {
       actions.add(AppBarAction.back);
     }
-    
+
+    if (isSearchOverlayShown) {
+      actions.add(AppBarAction.clearSearch);
+      return actions;
+    }
+    if (isSearchResultShown) {
+      actions.add(AppBarAction.sort);
+      return actions;
+    }
+
     final tab = context.select<TabStateModel, TabEntry>((it) => it.currentTab);
     if (tab != TabEntry.website) {
       actions.add(AppBarAction.sort);
       actions.add(AppBarAction.backdrop);
     }
 
-    bool isAlbumView = context.select<GalleryModelProvider, bool>((it) => it.model?.isAlbumView == true);
+    bool isAlbumView = context.select<TabModelsProvider, bool>((it) => it.model?.isAlbumView == true);
     if (isAlbumView) return actions;
-    
+
     bool isServerConfigured = context.select<ServerRepository, bool>((it) => it.serverUrl != null);
-    bool isSearching = context.select<GalleryModelProvider, bool>((it) => it.model?.currentState.isSearching == true);
     bool areDirectoriesDisplayed = context.select<AppBarModel, bool>((it) => it.areDirectoriesDisplayed);
-    if (isServerConfigured && !isSearching && tab != TabEntry.website) {
+    if (isServerConfigured && tab != TabEntry.website) {
       actions.add(AppBarAction.search);
       if (areDirectoriesDisplayed) {
         actions.add(AppBarAction.flatten);
@@ -76,7 +90,6 @@ class HomeAppBar extends StatelessWidget {
       context,
       child: _HomeAppBarInner(
         state,
-        key: ObjectKey(state),
       ),
     );
   }
@@ -84,28 +97,30 @@ class HomeAppBar extends StatelessWidget {
 
 class _HomeAppBarInner extends StatelessWidget {
   final AppBarState state;
-  const _HomeAppBarInner(this.state, {super.key});
+  const _HomeAppBarInner(this.state);
 
   List<Widget> _buildActions(BuildContext context) {
     List<Widget> actions = [];
+    if (state.actions.contains(AppBarAction.clearSearch)) {
+      actions.add(
+        IconButton(
+          icon: const Icon(Icons.clear),
+          onPressed: () {
+            context.read<TabModelsProvider>().searchModel?.clearInput();
+          },
+        ),
+      );
+    }
+
     if (state.actions.contains(AppBarAction.search)) {
       actions.add(
         IconButton(
           onPressed: () async {
-            GalleryModel model = context.read<GalleryModelProvider>().model!;
-            model.startSearch();
-            await showSearch(
-              context: context,
-              delegate: GallerySearchDelegate(
-                model.stackPosition,
-                baseDirectory: model.currentState.baseDirectory,
-              ),
-            );
-
-            /// transitionDuration of _SearchPageRoute is 300ms
-            Future.delayed(Duration(milliseconds: 300)).then((it) {
-              model.stopSearch();
-            });
+            final tab = context.read<TabStateModel>().currentTab;
+            GalleryModel model = context.read<TabModelsProvider>().model!;
+            context.read<TabModelsProvider>().searchModel!.startSearch(model.currentState.baseDirectory);
+            final key = navigatorKeys[tab.pos]!;
+            await key.currentState!.pushNamed("search", arguments: model.stackPosition);
           },
           icon: const Icon(Icons.search),
         ),
@@ -127,9 +142,7 @@ class _HomeAppBarInner extends StatelessWidget {
     if (state.actions.contains(AppBarAction.back)) {
       return IconButton(
         onPressed: () {
-          context.read<TabNavigatorModel>().goBack();
-          ScaffoldMessenger.of(context).removeCurrentSnackBar();
-          context.read<GalleryModelProvider>().model?.popStack();
+          onBackInvoked(context);
         },
         icon: const Icon(Icons.arrow_back),
         padding: EdgeInsets.zero,
@@ -141,6 +154,12 @@ class _HomeAppBarInner extends StatelessWidget {
 
   Widget _buildTitle(BuildContext context) {
     ThemeData theme = Theme.of(context);
+
+    final isSearching = context.select<TabModelsProvider, bool>((it) => (it.searchModel?.isSearching == true));
+    if (isSearching) {
+      return SearchAppBarTitle();
+    }
+
     return Expanded(
       child: Text(
         state.title == "." ? "" : state.title,

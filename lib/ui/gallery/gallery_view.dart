@@ -16,8 +16,7 @@ class GalleryView extends StatelessWidget {
     return Column(
       children: [
         if (stackPosition == 0 &&
-            context.read<TabEntry>() == TabEntry.home &&
-            !context.select<GalleryModel, bool>((it) => it.searchOngoing))
+            context.read<TabEntry>() == TabEntry.home)
           const TopPicksView(),
         Flexible(
           child: Selector<GalleryModel, List<Item>>(

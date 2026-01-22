@@ -26,7 +26,7 @@ import 'package:pigallery2_android/domain/repositories/sort_options_repository.d
 import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/photo_model.dart';
 import 'package:pigallery2_android/ui/fullscreen/viewmodels/video_model.dart';
-import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_provider.dart';
+import 'package:pigallery2_android/ui/home/viewmodels/tab_models_provider.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/web_view_model.dart';
@@ -163,9 +163,9 @@ class MyApp extends StatelessWidget {
             return TabStateModel();
           }),
         ),
-        ChangeNotifierProvider<GalleryModelProvider>(
+        ChangeNotifierProvider<TabModelsProvider>(
           create: ((context) {
-            return GalleryModelProvider(
+            return TabModelsProvider(
               context.read(),
               GalleryModel(context.read(), context.read(), context.read(), false),
               GalleryModel(context.read(), context.read(), context.read(), true),

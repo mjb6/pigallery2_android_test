@@ -6,12 +6,9 @@ class LoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.black,
-      child: Center(
-        child: SpinKitSpinningLines(
-          color: Theme.of(context).colorScheme.secondary,
-        ),
+    return Center(
+      child: SpinKitSpinningLines(
+        color: Theme.of(context).colorScheme.secondary,
       ),
     );
   }

@@ -1,47 +1,75 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class RefreshWrapper extends StatefulWidget {
   final Widget child;
-  final ScrollController scrollController;
 
-  const RefreshWrapper({required this.scrollController, required this.child, super.key});
+  const RefreshWrapper({required this.child, super.key});
 
   @override
   State<RefreshWrapper> createState() => _RefreshWrapperState();
 }
 
-class _RefreshWrapperState extends State<RefreshWrapper> {
-  late RefreshController _controller;
+class _RefreshWrapperState extends State<RefreshWrapper> with TickerProviderStateMixin{
+  late AnimationController _anicontroller, _scaleController;
+  final RefreshController _refreshController = RefreshController();
 
   @override
   void initState() {
+    _anicontroller = AnimationController(vsync: this, duration: Duration(milliseconds: 2000));
+    _scaleController = AnimationController(value: 0.0, vsync: this, upperBound: 1.0);
+    _refreshController.headerMode?.addListener(() {
+      if (_refreshController.headerStatus == RefreshStatus.idle) {
+        _scaleController.value = 0.0;
+        _anicontroller.reset();
+      } else if (_refreshController.headerStatus == RefreshStatus.refreshing) {
+        _anicontroller.repeat();
+      }
+    });
     super.initState();
-    _controller = RefreshController(initialRefresh: false);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _refreshController.dispose();
+    _scaleController.dispose();
+    _anicontroller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return SmartRefresher(
-      controller: _controller,
-      enablePullDown: true,
       enablePullUp: false,
-      header: WaterDropMaterialHeader(
-        color: Theme.of(context).colorScheme.primary,
-      ),
-      scrollController: widget.scrollController,
+      enablePullDown: true,
+      controller: _refreshController,
       onRefresh: () async {
         await context.read<TabNavigatorModel>().refresh();
-        _controller.refreshCompleted();
+        _refreshController.refreshCompleted();
       },
+      header: CustomHeader(
+        refreshStyle: RefreshStyle.Behind,
+        onOffsetChange: (offset) {
+          if (_refreshController.headerMode?.value != RefreshStatus.refreshing) {
+            _scaleController.value = offset / 80.0;
+          }
+        },
+        builder: (c, m) {
+          return Container(
+            alignment: Alignment.center,
+            child: FadeTransition(
+              opacity: _scaleController,
+              child: ScaleTransition(
+                scale: _scaleController,
+                child: SpinKitSpinningLines(size: 30.0, controller: _anicontroller, color: Colors.white),
+              ),
+            ),
+          );
+        },
+      ),
       child: widget.child,
     );
   }

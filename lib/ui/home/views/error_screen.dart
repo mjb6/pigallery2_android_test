@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/server_settings_action.dart';
-import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_provider.dart';
+import 'package:pigallery2_android/ui/home/viewmodels/tab_models_provider.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
 import 'package:pigallery2_android/util/strings.dart';
 import 'package:provider/provider.dart';
@@ -13,7 +13,7 @@ class GalleryErrorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String? error = context.select<GalleryModelProvider, String?>((it) => it.model?.currentState.error);
+    String? error = context.select<TabModelsProvider, String?>((it) => it.model?.currentState.error);
     if (error != null) {
       return ErrorScreen(error: error);
     }

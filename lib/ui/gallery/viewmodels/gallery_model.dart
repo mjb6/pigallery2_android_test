@@ -32,14 +32,6 @@ class GalleryModel extends SafeChangeNotifier {
   /// [GalleryModelState] of the top-most [HomeView] in the [Navigator] stack.
   GalleryModelState get currentState => _state.last;
 
-  /// Whether a search page is currently shown via showSearch, but no search has been submitted yet.
-  bool _isSearchPending = false;
-
-  bool _searchOngoing = false;
-
-  /// Whether a search page is currently shown via showSearch and has not yet been closed.
-  bool get searchOngoing => _searchOngoing;
-
   CancelableOperation<Directory?>? _currentRequest;
 
   SortOption get sortOption => currentState.sortOption;
@@ -97,7 +89,6 @@ class GalleryModel extends SafeChangeNotifier {
   }
 
   void _addStack(GalleryModelState state) {
-    _isSearchPending = false;
     _state.add(state);
   }
 
@@ -116,21 +107,6 @@ class GalleryModel extends SafeChangeNotifier {
     _currentRequest?.cancel();
     _currentRequest = null;
     _state.removeLast();
-    _isSearchPending = false;
-  }
-
-  void startSearch() {
-    _isSearchPending = true;
-    _searchOngoing = true;
-  }
-
-  void stopSearch() {
-    if (!_isSearchPending) {
-      popStack();
-    }
-    _isSearchPending = false;
-    _searchOngoing = false;
-    notifyListeners();
   }
 
   /// Update [currentState] to represent the given [Directory].

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_model.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
-import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_provider.dart';
+import 'package:pigallery2_android/ui/home/viewmodels/tab_models_provider.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
+import 'package:pigallery2_android/ui/search/search_viewmodel.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 import 'package:pigallery2_android/ui/top_picks/viewmodels/top_picks_model.dart';
+import 'package:provider/provider.dart';
 
 final Map<int, GlobalKey<NavigatorState>> navigatorKeys = {
   for (var it in TabEntry.values) it.pos: GlobalKey<NavigatorState>(),
@@ -14,7 +16,7 @@ final Map<int, GlobalKey<NavigatorState>> navigatorKeys = {
 class TabNavigatorModel extends SafeChangeNotifier {
   final TabStateModel _tabStateModel;
   final AppBarModel _appBarModel;
-  final GalleryModelProvider _galleryModelProvider;
+  final TabModelsProvider _galleryModelProvider;
   final TopPicksModel _topPicksModel;
   int _currentTab = 0;
   VoidCallback? _webViewBackHandler;
@@ -86,4 +88,17 @@ class TabNavigatorModel extends SafeChangeNotifier {
     }
     await model.fetch(isRefresh: true);
   }
+}
+
+/// back navigation triggered; either via a widget or system gesture
+void onBackInvoked(BuildContext context) {
+  context.read<TabNavigatorModel>().goBack();
+  ScaffoldMessenger.of(context).removeCurrentSnackBar();
+  SearchViewModel? searchModel = context.read<TabModelsProvider>().searchModel;
+  GalleryModel? model = context.read<TabModelsProvider>().model;
+  bool isSearchResultShown = model?.currentState.isSearching == true;
+  if (isSearchResultShown || searchModel?.isSearching != true) {
+    model?.popStack();
+  }
+  searchModel?.stopSearch();
 }

@@ -4,8 +4,9 @@ import 'package:pigallery2_android/ui/home/views/home_tab_view.dart';
 import 'package:pigallery2_android/ui/home/views/website_view.dart';
 import 'package:pigallery2_android/ui/gallery/gallery_view.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
-import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_provider.dart';
+import 'package:pigallery2_android/ui/home/viewmodels/tab_models_provider.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
+import 'package:pigallery2_android/ui/search/search_page.dart';
 import 'package:pigallery2_android/ui/shared/widgets/keep_alive_widget.dart';
 import 'package:pigallery2_android/ui/themes.dart';
 import 'package:provider/provider.dart';
@@ -50,7 +51,7 @@ class HomeViewGalleryPage extends StatelessWidget {
       onGenerateRoute: (routeSettings) {
         int stackPosition =
             routeSettings.arguments as int? ??
-            context.read<GalleryModelProvider>().getModelByTab(position).stackPosition;
+            context.read<TabModelsProvider>().getModelByTab(position).stackPosition;
         return PageRouteBuilder(
           transitionDuration: fadeTransitionDuration,
           reverseTransitionDuration: fadeTransitionReverseDuration,
@@ -58,11 +59,20 @@ class HomeViewGalleryPage extends StatelessWidget {
             return FadeTransition(opacity: animation, child: child);
           },
           pageBuilder: (context, _, _) {
+            Widget page;
+            if (routeSettings.name == "search") {
+              page = SearchPage(
+                baseStackPosition: stackPosition,
+                baseDirectory: context.read<TabModelsProvider>().getModelByTab(position).currentState.baseDirectory,
+              );
+            } else {
+              page = GalleryView(stackPosition);
+            }
             return Provider.value(
               value: TabEntry.fromPosition(position),
               builder: (context, child) => ChangeNotifierProvider<GalleryModel>.value(
-                value: context.read<GalleryModelProvider>().getModelByTab(position),
-                child: GalleryView(stackPosition),
+                value: context.read<TabModelsProvider>().getModelByTab(position),
+                child: page,
               ),
             );
           },

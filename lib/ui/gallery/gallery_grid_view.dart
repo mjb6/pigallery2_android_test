@@ -162,37 +162,33 @@ class _GalleryViewGridViewState extends State<GalleryViewGridView> with TickerPr
   Widget build(BuildContext context) {
     GlobalSettingsModel model = Provider.of<GlobalSettingsModel>(context);
     return OrientationBuilder(
-      builder: (context, orientation) => Container(
-        color: Colors.black,
-        child: GalleryErrorScreen(
-          child: RefreshWrapper(
-            scrollController: _scrollController,
-            child: GridView.builder(
-              key: PageStorageKey(widget.stackPosition),
-              controller: _scrollController,
-              itemCount: items.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: model.getGridCrossAxisCount(orientation),
-                crossAxisSpacing: model.gridSpacing.toDouble(),
-                mainAxisSpacing: model.gridSpacing.toDouble(),
-                childAspectRatio: model.gridAspectRatio,
-              ),
-              itemBuilder: (BuildContext context, int index) {
-                Item item = items[index];
-                return item is Directory
-                    ? DirectoryItem(
-                        dir: item,
-                        borderRadius: model.gridRoundedCorners,
-                        showDirectoryItemCount: model.showDirectoryItemCount,
-                        onTap: () => openDirectory(context, item),
-                      )
-                    : MediaItem(
-                        item: item as Media,
-                        borderRadius: model.gridRoundedCorners,
-                        onTap: () => openFullscreen(context, items, index),
-                      );
-              },
+      builder: (context, orientation) => GalleryErrorScreen(
+        child: RefreshWrapper(
+          child: GridView.builder(
+            key: PageStorageKey(widget.stackPosition),
+            controller: _scrollController,
+            itemCount: items.length,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: model.getGridCrossAxisCount(orientation),
+              crossAxisSpacing: model.gridSpacing.toDouble(),
+              mainAxisSpacing: model.gridSpacing.toDouble(),
+              childAspectRatio: model.gridAspectRatio,
             ),
+            itemBuilder: (BuildContext context, int index) {
+              Item item = items[index];
+              return item is Directory
+                  ? DirectoryItem(
+                      dir: item,
+                      borderRadius: model.gridRoundedCorners,
+                      showDirectoryItemCount: model.showDirectoryItemCount,
+                      onTap: () => openDirectory(context, item),
+                    )
+                  : MediaItem(
+                      item: item as Media,
+                      borderRadius: model.gridRoundedCorners,
+                      onTap: () => openFullscreen(context, items, index),
+                    );
+            },
           ),
         ),
       ),

@@ -1,7 +1,8 @@
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
-import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_provider.dart';
+import 'package:pigallery2_android/ui/home/viewmodels/tab_models_provider.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/web_view_model.dart';
+import 'package:pigallery2_android/ui/search/search_viewmodel.dart';
 import 'package:pigallery2_android/ui/shared/viewmodels/safe_change_notifier.dart';
 
 class AppBarModel extends SafeChangeNotifier {
@@ -9,7 +10,7 @@ class AppBarModel extends SafeChangeNotifier {
   bool _canGoBack = false;
   bool _areDirectoriesDisplayed = false;
 
-  final GalleryModelProvider _galleryModelSelector;
+  final TabModelsProvider _galleryModelSelector;
   final WebViewModel _webviewModel;
   final TabStateModel _tabStateModel;
 
@@ -65,7 +66,8 @@ class AppBarModel extends SafeChangeNotifier {
   /// update appbar before removing stack
   void handleBack() {
     GalleryModel? model = _galleryModelSelector.model;
-    if (_currentTab == TabEntry.website || model == null) return;
+    SearchViewModel? searchModel = _galleryModelSelector.searchModel;
+    if (_currentTab == TabEntry.website || model == null || searchModel?.isSearching == true) return;
     _update(
       canGoBack: model.stackPosition > 1,
       title: model.stateOf(model.stackPosition - 1).title,
