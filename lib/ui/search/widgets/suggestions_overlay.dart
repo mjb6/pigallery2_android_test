@@ -202,50 +202,29 @@ class _SuggestionsOverlayState extends State<SuggestionsOverlay> {
   }
 
   Future<void> _handleDatePicker(String keyword) async {
-    final picked = await showDatePicker(
+    // Let the user pick a single date or a date range.
+    final now = DateTime.now();
+    final pickedRange = await showDateRangePicker(
       context: context,
-      initialDate: DateTime.now(),
       firstDate: DateTime.utc(1900),
       lastDate: DateTime.now(),
+      initialDateRange: DateTimeRange(start: now, end: now),
     );
 
-    if (picked != null) {
-      final ts = picked.toUtc().millisecondsSinceEpoch;
-      final dateStr = SearchQueryParser.stringifyDate(ts);
-      widget.onInsertToken('$keyword$dateStr');
-    }
-  }
-
-  Future<void> _handleOrientationPicker() async {
-    final parser = SearchQueryParser();
-    final keywords = parser.keywords;
-
-    final selected = await showModalBottomSheet<bool>(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.screen_lock_portrait_outlined),
-              title: const Text('Portrait'),
-              onTap: () => Navigator.of(ctx).pop(false),
-            ),
-            ListTile(
-              leading: const Icon(Icons.screen_lock_landscape_outlined),
-              title: const Text('Landscape'),
-              onTap: () => Navigator.of(ctx).pop(true),
-            ),
-          ],
-        ),
-      ),
-    );
-
-    if (selected != null) {
-      final value = selected ? keywords.landscape : keywords.portrait;
-      widget.onInsertToken('${keywords.orientation}:$value');
+    if (pickedRange != null) {
+      final startTs = pickedRange.start.toUtc().millisecondsSinceEpoch;
+      final endTs = pickedRange.end.toUtc().millisecondsSinceEpoch;
+      final startStr = SearchQueryParser.stringifyDate(startTs);
+      final endStr = SearchQueryParser.stringifyDate(endTs);
+      if (startStr == null || endStr == null) return;
+      if (startTs == endTs) {
+        widget.onInsertToken('$keyword$startStr');
+      } else {
+        widget.onInsertToken('$keyword$startStr..$endStr');
+      }
     } else {
-      widget.onInsertToken('${keywords.orientation}:');
+      // If user cancelled, insert the keyword (with trailing colon) to allow manual typing
+      widget.onInsertToken(keyword);
     }
   }
 
@@ -253,12 +232,8 @@ class _SuggestionsOverlayState extends State<SuggestionsOverlay> {
     final parser = SearchQueryParser();
     final keywords = parser.keywords;
 
-    if (keywordWithColon == '${keywords.from}:') {
+    if (keywordWithColon == '${keywords.date}:') {
       await _handleDatePicker(keywordWithColon);
-    } else if (keywordWithColon == '${keywords.to}:') {
-      await _handleDatePicker(keywordWithColon);
-    } else if (keywordWithColon == '${keywords.orientation}:') {
-      await _handleOrientationPicker();
     } else {
       widget.onInsertToken(keywordWithColon);
     }
@@ -327,8 +302,7 @@ class _SuggestionsOverlayState extends State<SuggestionsOverlay> {
       widget.keywords.caption,
       widget.keywords.person,
       widget.keywords.orientation,
-      widget.keywords.from,
-      widget.keywords.to,
+      widget.keywords.date,
       widget.keywords.anyText,
     ].whereType<String>().toList();
 

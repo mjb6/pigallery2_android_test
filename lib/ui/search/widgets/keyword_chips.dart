@@ -15,8 +15,7 @@ class KeywordChips extends StatelessWidget {
       keywords.caption,
       keywords.person,
       keywords.orientation,
-      keywords.from,
-      keywords.to,
+      keywords.date,
       keywords.anyText,
     ].whereType<String>();
 
@@ -26,18 +25,45 @@ class KeywordChips extends StatelessWidget {
       spacing: 8,
       runSpacing: 8,
       children: visible
-          .map(
-            (k) => ActionChip(
-              avatar: const Icon(Icons.label_outline, size: 16),
-              label: Text('$k:', style: const TextStyle(fontSize: 13)),
-              backgroundColor: Colors.transparent,
-              shape: RoundedRectangleBorder(
-                side: BorderSide(color: Theme.of(context).dividerColor.withAlpha(20)),
-                borderRadius: BorderRadius.circular(16),
+          .expand<Widget>((k) {
+            if (k == keywords.orientation) {
+              // show orientation values as explicit chips to avoid a bottom-sheet
+              return [
+                ActionChip(
+                  avatar: const Icon(Icons.label_outline, size: 16),
+                  label: Text('$k:${keywords.portrait}', style: const TextStyle(fontSize: 13)),
+                  backgroundColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(color: Theme.of(context).dividerColor.withAlpha(20)),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  onPressed: () => onPressed('$k:${keywords.portrait}'),
+                ),
+                ActionChip(
+                  avatar: const Icon(Icons.label_outline, size: 16),
+                  label: Text('$k:${keywords.landscape}', style: const TextStyle(fontSize: 13)),
+                  backgroundColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(color: Theme.of(context).dividerColor.withAlpha(20)),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  onPressed: () => onPressed('$k:${keywords.landscape}'),
+                ),
+              ];
+            }
+            return [
+              ActionChip(
+                avatar: const Icon(Icons.label_outline, size: 16),
+                label: Text('$k:', style: const TextStyle(fontSize: 13)),
+                backgroundColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(color: Theme.of(context).dividerColor.withAlpha(20)),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                onPressed: () => onPressed('$k:'),
               ),
-              onPressed: () => onPressed('$k:'),
-            ),
-          )
+            ];
+          })
           .toList(),
     );
   }

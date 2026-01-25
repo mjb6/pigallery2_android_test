@@ -9,7 +9,7 @@ class AutoCompleteItem {
   Map<String, dynamic> toJson() {
     return {
       'text': text,
-      'type': type.value,
+      'value': type.value,
     };
   }
 
@@ -17,7 +17,7 @@ class AutoCompleteItem {
     final rawType = json['type'];
     final int typeValue = rawType is int ? rawType : int.tryParse(rawType.toString()) ?? 0;
     return AutoCompleteItem(
-      json['text'] as String,
+      json['value'] as String,
       SearchQueryTypes.fromValue(typeValue),
     );
   }

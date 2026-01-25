@@ -14,7 +14,13 @@ class SearchViewModel extends ChangeNotifier {
   String get query => controller.text;
 
   set query(String v) {
+    if (controller.text == v) {
+      notifyListeners();
+      return;
+    }
+
     controller.text = v;
+    // For programmatic changes (inserting tokens), move cursor to the end.
     controller.selection = TextSelection.fromPosition(TextPosition(offset: controller.text.length));
     notifyListeners();
   }

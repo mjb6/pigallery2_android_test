@@ -1,6 +1,5 @@
-import 'search.dart';
+import 'package:pigallery2_android/data/backend/models/search/search.dart';
 
-/// based on Pigallery2 3.1.0
 class QueryKeywords {
   final String daysAgo;
   final String yearsAgo;
@@ -15,18 +14,14 @@ class QueryKeywords {
   final String landscape;
   final String orientation;
   final String kmFrom;
-  final String maxResolution;
-  final String minResolution;
-  final String maxRating;
-  final String minRating;
-  final String maxPersonCount;
-  final String minPersonCount;
+  final String resolution;
+  final String rating;
+  final String personCount;
   final String nSomeOf;
   final String someOf;
   final String or;
   final String and;
-  final String from;
-  final String to;
+  final String date;
   final String anyText;
   final String caption;
   final String directory;
@@ -49,18 +44,14 @@ class QueryKeywords {
     required this.landscape,
     required this.orientation,
     required this.kmFrom,
-    required this.maxResolution,
-    required this.minResolution,
-    required this.maxRating,
-    required this.minRating,
-    required this.maxPersonCount,
-    required this.minPersonCount,
+    required this.resolution,
+    required this.rating,
+    required this.personCount,
     required this.nSomeOf,
     required this.someOf,
     required this.or,
     required this.and,
-    required this.from,
-    required this.to,
+    required this.date,
     required this.anyText,
     required this.caption,
     required this.directory,
@@ -75,14 +66,10 @@ class QueryKeywords {
       nSomeOf: 'of',
       and: 'and',
       or: 'or',
-      from: 'after',
-      to: 'before',
-      maxRating: 'max-rating',
-      minRating: 'min-rating',
-      maxPersonCount: 'max-persons',
-      minPersonCount: 'min-persons',
-      maxResolution: 'max-resolution',
-      minResolution: 'min-resolution',
+      date: 'date',
+      rating: 'rating',
+      personCount: 'person-count',
+      resolution: 'resolution',
       kmFrom: 'km-from',
       orientation: 'orientation',
       landscape: 'landscape',
@@ -126,7 +113,10 @@ class SearchQueryParser {
     return text;
   }
 
-  static String stringifyDate(int timestamp) {
+  static String? stringifyDate(int? timestamp) {
+    if (timestamp == null || timestamp == 0) {
+      return null;
+    }
     final date = DateTime.fromMillisecondsSinceEpoch(timestamp, isUtc: true);
 
     // simplify date with year only if it's first of jan
@@ -311,57 +301,8 @@ class SearchQueryParser {
       return ret;
     }
 
-    bool kwStartsWith(String s, String kw) {
-      return s.startsWith('$kw:') || s.startsWith('$kw!:');
-    }
-
-    if (kwStartsWith(text, keywords.from)) {
-      return FromDateSearch(
-        parseDate(text.substring(text.indexOf(':') + 1)),
-        negate: text.startsWith('${keywords.from}!:'),
-      );
-    }
-
-    if (kwStartsWith(text, keywords.to)) {
-      return ToDateSearch(
-        parseDate(text.substring(text.indexOf(':') + 1)),
-        negate: text.startsWith('${keywords.to}!:'),
-      );
-    }
-
-    RangeSearch? addValueRangeParser(String matcher, SearchQueryTypes type) {
-      if (kwStartsWith(text, matcher)) {
-        final value = int.parse(text.substring(text.indexOf(':') + 1));
-        final negate = text.startsWith('$matcher!:');
-
-        switch (type) {
-          case SearchQueryTypes.minRating:
-            return MinRatingSearch(value, negate: negate);
-          case SearchQueryTypes.maxRating:
-            return MaxRatingSearch(value, negate: negate);
-          case SearchQueryTypes.minResolution:
-            return MinResolutionSearch(value, negate: negate);
-          case SearchQueryTypes.maxResolution:
-            return MaxResolutionSearch(value, negate: negate);
-          case SearchQueryTypes.minPersonCount:
-            return MinPersonCountSearch(value, negate: negate);
-          case SearchQueryTypes.maxPersonCount:
-            return MaxPersonCountSearch(value, negate: negate);
-          default:
-            return null;
-        }
-      }
-      return null;
-    }
-
-    RangeSearch? range =
-        addValueRangeParser(keywords.minRating, SearchQueryTypes.minRating) ??
-        addValueRangeParser(keywords.maxRating, SearchQueryTypes.maxRating) ??
-        addValueRangeParser(keywords.minResolution, SearchQueryTypes.minResolution) ??
-        addValueRangeParser(keywords.maxResolution, SearchQueryTypes.maxResolution) ??
-        addValueRangeParser(keywords.minPersonCount, SearchQueryTypes.minPersonCount) ??
-        addValueRangeParser(keywords.maxPersonCount, SearchQueryTypes.maxPersonCount);
-
+    // Parse range queries (date, rating, resolution, person_count)
+    RangeSearch? range = _parseRangeQuery(text);
     if (range != null) {
       return range;
     }
@@ -395,7 +336,7 @@ class SearchQueryParser {
 
       // If not coordinates, treat as location text
       return DistanceSearch(
-        {'text': from},
+        {'value': from},
         intFromRegexp(text).toDouble(),
         negate: RegExp('^\\d*-${RegExp.escape(keywords.kmFrom)}!:').hasMatch(text),
       );
@@ -407,7 +348,8 @@ class SearchQueryParser {
       );
     }
 
-    if (kwStartsWith(text, keywords.sameDay) || RegExp('^${humanToRegexpStr(keywords.lastNDays)}!?:').hasMatch(text)) {
+    if (_matchesKeyword(text, keywords.sameDay) ||
+        RegExp('^${humanToRegexpStr(keywords.lastNDays)}!?:').hasMatch(text)) {
       final freqStr = !text.contains('!:')
           ? text.substring(text.indexOf(':') + 1)
           : text.substring(text.indexOf('!:') + 2);
@@ -436,7 +378,7 @@ class SearchQueryParser {
       }
 
       if (freq != null) {
-        final daysLength = kwStartsWith(text, keywords.sameDay) ? 0 : intFromRegexp(text);
+        final daysLength = _matchesKeyword(text, keywords.sameDay) ? 0 : intFromRegexp(text);
         return DatePatternSearch(
           daysLength,
           freq,
@@ -505,6 +447,100 @@ class SearchQueryParser {
     return TextSearch(SearchQueryTypes.anyText, text);
   }
 
+  RangeSearch? _parseRangeQuery(String str) {
+    // Regex pattern for parsing range queries
+    // Examples: rating:4..6, rating:4, rating=4, rating!>3, rating>3, rating!>=3, rating>=3, etc.
+
+    for (final keyword in [keywords.date, keywords.rating, keywords.resolution, keywords.personCount]) {
+      final isDateType = keyword == keywords.date;
+      final value = isDateType ? '(\\d{4}(?:-\\d{1,2})?(?:-\\d{1,2})?)' : '(\\d+)';
+
+      final regex = RegExp('^${RegExp.escape(keyword)}(!?[:=]|!?[<>]=?)$value(?:\\.\\.$value)?\$');
+
+      final m = regex.firstMatch(str);
+      if (m == null) continue;
+
+      String relation = m.group(1)!;
+      final rawA = m.group(2)!;
+      final rawB = m.group(3);
+
+      final toValue = isDateType ? (String v) => parseDate(v) : (String v) => int.parse(v);
+
+      final addValue = isDateType ? (int v, int a) => v + (a * 24 * 60 * 60 * 1000) : (int v, int a) => v + a;
+
+      final a = toValue(rawA);
+      final b = rawB != null ? toValue(rawB) : null;
+
+      bool negate = false;
+      if (relation.startsWith('!')) {
+        negate = true;
+        relation = relation.substring(1);
+      }
+
+      late RangeSearch result;
+
+      if (relation == '=' || relation == ':') {
+        if (b == null) {
+          result = _createRangeSearch(keyword, min: a, max: a, negate: negate);
+        } else {
+          result = _createRangeSearch(keyword, min: a, max: b, negate: negate);
+        }
+      } else if (relation == '>=') {
+        result = _createRangeSearch(keyword, min: a, negate: negate);
+      } else if (relation == '>') {
+        result = _createRangeSearch(keyword, min: addValue(a, 1), negate: negate);
+      } else if (relation == '<=') {
+        result = _createRangeSearch(keyword, max: a, negate: negate);
+      } else if (relation == '<') {
+        result = _createRangeSearch(keyword, max: addValue(a, -1), negate: negate);
+      } else {
+        continue;
+      }
+
+      return result;
+    }
+
+    return null;
+  }
+
+  RangeSearch _createRangeSearch(String keyword, {int? min, int? max, bool negate = false}) {
+    if (keyword == keywords.date) {
+      return DateSearch(min: min, max: max, negate: negate);
+    } else if (keyword == keywords.rating) {
+      return RatingSearch(min: min, max: max, negate: negate);
+    } else if (keyword == keywords.resolution) {
+      return ResolutionSearch(min: min, max: max, negate: negate);
+    } else if (keyword == keywords.personCount) {
+      return PersonCountSearch(min: min, max: max, negate: negate);
+    }
+    throw Exception('Unknown range search keyword: $keyword');
+  }
+
+  bool _matchesKeyword(String str, String keyword) {
+    return str.startsWith('$keyword:') || str.startsWith('$keyword!:');
+  }
+
+  String? _getKeywordForType(SearchQueryTypes type) {
+    switch (type) {
+      case SearchQueryTypes.anyText:
+        return keywords.anyText;
+      case SearchQueryTypes.caption:
+        return keywords.caption;
+      case SearchQueryTypes.directory:
+        return keywords.directory;
+      case SearchQueryTypes.fileName:
+        return keywords.fileName;
+      case SearchQueryTypes.keyword:
+        return keywords.keyword;
+      case SearchQueryTypes.person:
+        return keywords.person;
+      case SearchQueryTypes.position:
+        return keywords.position;
+      default:
+        return null;
+    }
+  }
+
   String stringify(SearchQueryDTO query) {
     final ret = _stringifyOnEntry(query);
     if (ret.isNotEmpty && ret[0] == '(' && ret[ret.length - 1] == ')') {
@@ -518,7 +554,8 @@ class SearchQueryParser {
       return '';
     }
 
-    final colon = (query is NegatableSearchQuery && query.negate == true) ? '!:' : ':';
+    final negateSign = (query is NegatableSearchQuery && query.negate == true) ? '!' : '';
+    final colon = '$negateSign:';
 
     switch (query.type) {
       case SearchQueryTypes.and:
@@ -534,42 +571,26 @@ class SearchQueryParser {
         }
         return '${keywords.someOf}:(${someOfQuery.list.map((q) => _stringifyOnEntry(q)).join(' ')})';
 
-      case SearchQueryTypes.fromDate:
-        final fromDateQuery = query as FromDateSearch;
-        if (fromDateQuery.value == 0) {
-          return '';
-        }
-        return '${keywords.from}$colon${stringifyDate(fromDateQuery.value.toInt())}';
+      case SearchQueryTypes.date:
+        final dateQuery = query as DateSearch;
+        return _stringifyRangeQuery(keywords.date, dateQuery, colon);
 
-      case SearchQueryTypes.toDate:
-        final toDateQuery = query as ToDateSearch;
-        if (toDateQuery.value == 0) {
-          return '';
-        }
-        return '${keywords.to}$colon${stringifyDate(toDateQuery.value.toInt())}';
+      case SearchQueryTypes.rating:
+        final ratingQuery = query as RatingSearch;
+        return _stringifyRangeQuery(keywords.rating, ratingQuery, colon);
 
-      case SearchQueryTypes.minRating:
-        return '${keywords.minRating}$colon${(query as RangeSearch).value}';
+      case SearchQueryTypes.resolution:
+        final resQuery = query as ResolutionSearch;
+        return _stringifyRangeQuery(keywords.resolution, resQuery, colon);
 
-      case SearchQueryTypes.maxRating:
-        return '${keywords.maxRating}$colon${(query as RangeSearch).value}';
-
-      case SearchQueryTypes.minPersonCount:
-        return '${keywords.minPersonCount}$colon${(query as RangeSearch).value}';
-
-      case SearchQueryTypes.maxPersonCount:
-        return '${keywords.maxPersonCount}$colon${(query as RangeSearch).value}';
-
-      case SearchQueryTypes.minResolution:
-        return '${keywords.minResolution}$colon${(query as RangeSearch).value}';
-
-      case SearchQueryTypes.maxResolution:
-        return '${keywords.maxResolution}$colon${(query as RangeSearch).value}';
+      case SearchQueryTypes.personCount:
+        final personQuery = query as PersonCountSearch;
+        return _stringifyRangeQuery(keywords.personCount, personQuery, colon);
 
       case SearchQueryTypes.distance:
         final distanceQuery = query as DistanceSearch;
         final from = distanceQuery.from;
-        String? text = from['text'] as String?;
+        String? text = from['value'] as String?;
         final gpsData = from['GPSData'] as Map<String, dynamic>?;
 
         String locationStr = '';
@@ -639,9 +660,9 @@ class SearchQueryParser {
       case SearchQueryTypes.anyText:
         final textQuery = query as TextSearch;
         if (textQuery.negate != true) {
-          return stringifyText(textQuery.text, textQuery.matchType ?? TextSearchQueryMatchTypes.like);
+          return stringifyText(textQuery.value, textQuery.matchType ?? TextSearchQueryMatchTypes.like);
         } else {
-          return '${keywords.anyText}$colon${stringifyText(textQuery.text, textQuery.matchType ?? TextSearchQueryMatchTypes.like)}';
+          return '${keywords.anyText}$colon${stringifyText(textQuery.value, textQuery.matchType ?? TextSearchQueryMatchTypes.like)}';
         }
 
       case SearchQueryTypes.person:
@@ -651,38 +672,55 @@ class SearchQueryParser {
       case SearchQueryTypes.fileName:
       case SearchQueryTypes.directory:
         final textQuery = query as TextSearch;
-        if (textQuery.text.isEmpty) {
+        if (textQuery.value.isEmpty) {
           return '';
         }
         final keyword = _getKeywordForType(textQuery.type);
         if (keyword == null) {
           return '';
         }
-        return '$keyword$colon${stringifyText(textQuery.text, textQuery.matchType ?? TextSearchQueryMatchTypes.like)}';
+        return '$keyword$colon${stringifyText(textQuery.value, textQuery.matchType ?? TextSearchQueryMatchTypes.like)}';
 
       default:
         throw Exception('Unknown type: ${query.type}');
     }
   }
 
-  String? _getKeywordForType(SearchQueryTypes type) {
-    switch (type) {
-      case SearchQueryTypes.anyText:
-        return keywords.anyText;
-      case SearchQueryTypes.caption:
-        return keywords.caption;
-      case SearchQueryTypes.directory:
-        return keywords.directory;
-      case SearchQueryTypes.fileName:
-        return keywords.fileName;
-      case SearchQueryTypes.keyword:
-        return keywords.keyword;
-      case SearchQueryTypes.person:
-        return keywords.person;
-      case SearchQueryTypes.position:
-        return keywords.position;
-      default:
-        return null;
+  String _stringifyRangeQuery(String keyword, RangeSearch query, String colon) {
+    final min = query.min;
+    final max = query.max;
+
+    if (min == null && max == null) {
+      return '';
     }
+
+    if (keyword == keywords.date) {
+      if (min != null && max != null && min == max) {
+        final dateStr = stringifyDate(min as int?);
+        return dateStr != null ? '$keyword$colon$dateStr' : '';
+      } else if (min != null && max != null) {
+        final minStr = stringifyDate(min as int?);
+        final maxStr = stringifyDate(max as int?);
+        return '$keyword$colon$minStr..$maxStr';
+      } else if (min != null) {
+        final dateStr = stringifyDate(min as int?);
+        return dateStr != null ? '$keyword$colon$dateStr' : '';
+      } else if (max != null) {
+        final dateStr = stringifyDate(max as int?);
+        return dateStr != null ? '$keyword$colon$dateStr' : '';
+      }
+    } else {
+      if (min != null && max != null && min == max) {
+        return '$keyword$colon$min';
+      } else if (min != null && max != null) {
+        return '$keyword$colon$min..$max';
+      } else if (min != null) {
+        return '$keyword$colon$min';
+      } else if (max != null) {
+        return '$keyword$colon$max';
+      }
+    }
+
+    return '';
   }
 }

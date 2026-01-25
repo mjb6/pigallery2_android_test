@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 enum SearchQueryTypes {
   and(1),
   or(2),
@@ -6,14 +8,10 @@ enum SearchQueryTypes {
 
   // non-text metadata
   // |- range types
-  fromDate(10),
-  toDate(11),
-  minRating(12),
-  maxRating(13),
-  minResolution(14),
-  maxResolution(15),
-  minPersonCount(16),
-  maxPersonCount(17),
+  date(10),
+  rating(12),
+  resolution(14),
+  personCount(16),
 
   distance(50),
   orientation(51),
@@ -93,22 +91,14 @@ sealed class SearchQueryDTO {
         return SomeOfSearchQuery.fromJson(json);
       case SearchQueryTypes.distance:
         return DistanceSearch.fromJson(json);
-      case SearchQueryTypes.fromDate:
-        return FromDateSearch.fromJson(json);
-      case SearchQueryTypes.toDate:
-        return ToDateSearch.fromJson(json);
-      case SearchQueryTypes.minRating:
-        return MinRatingSearch.fromJson(json);
-      case SearchQueryTypes.maxRating:
-        return MaxRatingSearch.fromJson(json);
-      case SearchQueryTypes.minResolution:
-        return MinResolutionSearch.fromJson(json);
-      case SearchQueryTypes.maxResolution:
-        return MaxResolutionSearch.fromJson(json);
-      case SearchQueryTypes.minPersonCount:
-        return MinPersonCountSearch.fromJson(json);
-      case SearchQueryTypes.maxPersonCount:
-        return MaxPersonCountSearch.fromJson(json);
+      case SearchQueryTypes.date:
+        return DateSearch.fromJson(json);
+      case SearchQueryTypes.rating:
+        return RatingSearch.fromJson(json);
+      case SearchQueryTypes.resolution:
+        return ResolutionSearch.fromJson(json);
+      case SearchQueryTypes.personCount:
+        return PersonCountSearch.fromJson(json);
       case SearchQueryTypes.orientation:
         return OrientationSearch.fromJson(json);
       case SearchQueryTypes.datePattern:
@@ -185,15 +175,17 @@ class SomeOfSearchQuery extends SearchListQuery {
 }
 
 class TextSearch extends NegatableSearchQuery {
-  final String text;
+  final String value;
   final TextSearchQueryMatchTypes? matchType;
 
-  TextSearch(super.type, this.text, {this.matchType, super.negate}) : assert(TextSearchQueryTypes.contains(type));
+  TextSearch(super.type, this.value,
+      {this.matchType, super.negate})
+      : assert(TextSearchQueryTypes.contains(type));
 
   @override
   Map<String, dynamic> toJson() {
     final json = super.toJson();
-    json['text'] = text;
+    json['value'] = value;
     if (matchType != null) json['matchType'] = matchType!.value;
     return json;
   }
@@ -201,8 +193,10 @@ class TextSearch extends NegatableSearchQuery {
   factory TextSearch.fromJson(Map<String, dynamic> json) {
     return TextSearch(
       SearchQueryTypes.fromValue(json['type']),
-      json['text'],
-      matchType: json['matchType'] != null ? TextSearchQueryMatchTypes.fromValue(json['matchType']) : null,
+      json['value'],
+      matchType: json['matchType'] != null
+          ? TextSearchQueryMatchTypes.fromValue(json['matchType'])
+          : null,
       negate: json['negate'],
     );
   }
@@ -210,9 +204,10 @@ class TextSearch extends NegatableSearchQuery {
 
 class DistanceSearch extends NegatableSearchQuery {
   final Map<String, dynamic> from;
-  final double distance;
+  final num distance;
 
-  DistanceSearch(this.from, this.distance, {super.negate}) : super(SearchQueryTypes.distance);
+  DistanceSearch(this.from, this.distance, {bool? negate})
+      : super(SearchQueryTypes.distance, negate: negate);
 
   @override
   Map<String, dynamic> toJson() {
@@ -224,87 +219,77 @@ class DistanceSearch extends NegatableSearchQuery {
 
   factory DistanceSearch.fromJson(Map<String, dynamic> json) {
     return DistanceSearch(
-      json['from'],
-      json['distance'].toDouble(),
+      json['from'] as Map<String, dynamic>,
+      json['distance'] is int ? (json['distance'] as int).toDouble() : json['distance'] as double,
       negate: json['negate'],
     );
   }
 }
 
 abstract class RangeSearch extends NegatableSearchQuery {
-  final num value;
+  final num? min;
+  final num? max;
 
-  RangeSearch(super.type, this.value, {super.negate});
+  RangeSearch(super.type, {this.min, this.max, super.negate});
 
   @override
   Map<String, dynamic> toJson() {
     final json = super.toJson();
-    json['value'] = value;
+    if (min != null) json['min'] = min;
+    if (max != null) json['max'] = max;
     return json;
   }
 }
 
-class FromDateSearch extends RangeSearch {
-  FromDateSearch(num value, {bool? negate}) : super(SearchQueryTypes.fromDate, value, negate: negate);
+class DateSearch extends RangeSearch {
+  DateSearch({num? min, num? max, bool? negate})
+      : super(SearchQueryTypes.date, min: min, max: max, negate: negate);
 
-  factory FromDateSearch.fromJson(Map<String, dynamic> json) {
-    return FromDateSearch(json['value'], negate: json['negate']);
+  factory DateSearch.fromJson(Map<String, dynamic> json) {
+    return DateSearch(
+      min: json['min'],
+      max: json['max'],
+      negate: json['negate'],
+    );
   }
 }
 
-class ToDateSearch extends RangeSearch {
-  ToDateSearch(num value, {bool? negate}) : super(SearchQueryTypes.toDate, value, negate: negate);
+class RatingSearch extends RangeSearch {
+  RatingSearch({num? min, num? max, bool? negate})
+      : super(SearchQueryTypes.rating, min: min, max: max, negate: negate);
 
-  factory ToDateSearch.fromJson(Map<String, dynamic> json) {
-    return ToDateSearch(json['value'], negate: json['negate']);
+  factory RatingSearch.fromJson(Map<String, dynamic> json) {
+    return RatingSearch(
+      min: json['min'],
+      max: json['max'],
+      negate: json['negate'],
+    );
   }
 }
 
-class MinRatingSearch extends RangeSearch {
-  MinRatingSearch(num value, {bool? negate}) : super(SearchQueryTypes.minRating, value, negate: negate);
+class PersonCountSearch extends RangeSearch {
+  PersonCountSearch({num? min, num? max, bool? negate})
+      : super(SearchQueryTypes.personCount, min: min, max: max, negate: negate);
 
-  factory MinRatingSearch.fromJson(Map<String, dynamic> json) {
-    return MinRatingSearch(json['value'], negate: json['negate']);
+  factory PersonCountSearch.fromJson(Map<String, dynamic> json) {
+    return PersonCountSearch(
+      min: json['min'],
+      max: json['max'],
+      negate: json['negate'],
+    );
   }
 }
 
-class MaxRatingSearch extends RangeSearch {
-  MaxRatingSearch(num value, {bool? negate}) : super(SearchQueryTypes.maxRating, value, negate: negate);
+class ResolutionSearch extends RangeSearch {
+  ResolutionSearch({num? min, num? max, bool? negate})
+      : super(SearchQueryTypes.resolution, min: min, max: max, negate: negate);
 
-  factory MaxRatingSearch.fromJson(Map<String, dynamic> json) {
-    return MaxRatingSearch(json['value'], negate: json['negate']);
-  }
-}
-
-class MinPersonCountSearch extends RangeSearch {
-  MinPersonCountSearch(num value, {bool? negate}) : super(SearchQueryTypes.minPersonCount, value, negate: negate);
-
-  factory MinPersonCountSearch.fromJson(Map<String, dynamic> json) {
-    return MinPersonCountSearch(json['value'], negate: json['negate']);
-  }
-}
-
-class MaxPersonCountSearch extends RangeSearch {
-  MaxPersonCountSearch(num value, {bool? negate}) : super(SearchQueryTypes.maxPersonCount, value, negate: negate);
-
-  factory MaxPersonCountSearch.fromJson(Map<String, dynamic> json) {
-    return MaxPersonCountSearch(json['value'], negate: json['negate']);
-  }
-}
-
-class MinResolutionSearch extends RangeSearch {
-  MinResolutionSearch(num value, {bool? negate}) : super(SearchQueryTypes.minResolution, value, negate: negate);
-
-  factory MinResolutionSearch.fromJson(Map<String, dynamic> json) {
-    return MinResolutionSearch(json['value'], negate: json['negate']);
-  }
-}
-
-class MaxResolutionSearch extends RangeSearch {
-  MaxResolutionSearch(num value, {bool? negate}) : super(SearchQueryTypes.maxResolution, value, negate: negate);
-
-  factory MaxResolutionSearch.fromJson(Map<String, dynamic> json) {
-    return MaxResolutionSearch(json['value'], negate: json['negate']);
+  factory ResolutionSearch.fromJson(Map<String, dynamic> json) {
+    return ResolutionSearch(
+      min: json['min'],
+      max: json['max'],
+      negate: json['negate'],
+    );
   }
 }
 
@@ -334,8 +319,8 @@ class DatePatternSearch extends NegatableSearchQuery {
     this.daysLength,
     this.frequency, {
     this.agoNumber,
-    super.negate,
-  }) : super(SearchQueryTypes.datePattern);
+    bool? negate,
+  }) : super(SearchQueryTypes.datePattern, negate: negate);
 
   @override
   Map<String, dynamic> toJson() {
@@ -373,21 +358,11 @@ const List<SearchQueryTypes> TextSearchQueryTypes = [
   SearchQueryTypes.position,
 ];
 
-const List<SearchQueryTypes> MinRangeSearchQueryTypes = [
-  SearchQueryTypes.fromDate,
-  SearchQueryTypes.minRating,
-  SearchQueryTypes.minResolution,
-];
-
-const List<SearchQueryTypes> MaxRangeSearchQueryTypes = [
-  SearchQueryTypes.toDate,
-  SearchQueryTypes.maxRating,
-  SearchQueryTypes.maxResolution,
-];
-
 const List<SearchQueryTypes> RangeSearchQueryTypes = [
-  ...MinRangeSearchQueryTypes,
-  ...MaxRangeSearchQueryTypes,
+  SearchQueryTypes.date,
+  SearchQueryTypes.rating,
+  SearchQueryTypes.resolution,
+  SearchQueryTypes.personCount,
 ];
 
 const List<SearchQueryTypes> MetadataSearchQueryTypes = [
