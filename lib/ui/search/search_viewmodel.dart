@@ -54,7 +54,7 @@ class SearchViewModel extends ChangeNotifier {
   void stopSearch() {
     showOverlay = false;
     _isSearching = false;
-    notifyListeners();
+    query = '';
   }
 
   @override

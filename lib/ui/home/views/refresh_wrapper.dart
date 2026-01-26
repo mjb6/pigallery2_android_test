@@ -13,7 +13,7 @@ class RefreshWrapper extends StatefulWidget {
   State<RefreshWrapper> createState() => _RefreshWrapperState();
 }
 
-class _RefreshWrapperState extends State<RefreshWrapper> with TickerProviderStateMixin{
+class _RefreshWrapperState extends State<RefreshWrapper> with TickerProviderStateMixin {
   late AnimationController _anicontroller, _scaleController;
   final RefreshController _refreshController = RefreshController();
 
@@ -21,14 +21,6 @@ class _RefreshWrapperState extends State<RefreshWrapper> with TickerProviderStat
   void initState() {
     _anicontroller = AnimationController(vsync: this, duration: Duration(milliseconds: 2000));
     _scaleController = AnimationController(value: 0.0, vsync: this, upperBound: 1.0);
-    _refreshController.headerMode?.addListener(() {
-      if (_refreshController.headerStatus == RefreshStatus.idle) {
-        _scaleController.value = 0.0;
-        _anicontroller.reset();
-      } else if (_refreshController.headerStatus == RefreshStatus.refreshing) {
-        _anicontroller.repeat();
-      }
-    });
     super.initState();
   }
 
@@ -57,14 +49,18 @@ class _RefreshWrapperState extends State<RefreshWrapper> with TickerProviderStat
             _scaleController.value = offset / 80.0;
           }
         },
-        builder: (c, m) {
+        builder: (_, _) {
           return Container(
             alignment: Alignment.center,
             child: FadeTransition(
               opacity: _scaleController,
               child: ScaleTransition(
                 scale: _scaleController,
-                child: SpinKitSpinningLines(size: 30.0, controller: _anicontroller, color: Colors.white),
+                child: SpinKitSpinningLines(
+                  size: 50.0,
+                  controller: _anicontroller,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
               ),
             ),
           );

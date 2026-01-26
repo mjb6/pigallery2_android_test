@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:pigallery2_android/domain/repositories/server_repository.dart';
+import 'package:pigallery2_android/ui/app_bar/actions/delete_album_button.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/flatten_dir_button.dart';
+import 'package:pigallery2_android/ui/app_bar/actions/save_album_button.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/sort_option_button.dart';
 import 'package:pigallery2_android/ui/app_bar/viewmodels/app_bar_model.dart';
 import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model.dart';
 import 'package:pigallery2_android/ui/app_bar/actions/animated_backdrop_toggle_button.dart';
 import 'package:pigallery2_android/ui/app_bar/search/search_app_bar_title.dart';
+import 'package:pigallery2_android/ui/gallery/viewmodels/gallery_model_state.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_models_provider.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_navigator_model.dart';
 import 'package:pigallery2_android/ui/home/viewmodels/tab_state_model.dart';
@@ -13,7 +16,7 @@ import 'package:pigallery2_android/ui/themes.dart';
 import 'package:pigallery2_android/util/system_ui.dart';
 import 'package:provider/provider.dart';
 
-enum AppBarAction { back, search, clearSearch, flatten, backdrop, sort }
+enum AppBarAction { back, search, clearSearch, flatten, backdrop, saveAlbum, deleteAlbum, sort }
 
 class AppBarState {
   final String title;
@@ -33,7 +36,10 @@ class HomeAppBar extends StatelessWidget {
       (it) => it.searchModel?.showOverlay == true,
     );
     bool isSearchResultShown = context.select<TabModelsProvider, bool>(
-      (it) => it.model?.currentState.isSearching == true,
+      (it) => it.model?.currentState.type is SearchGalleryModelStateType,
+    );
+    bool isFlattenResultShown = context.select<TabModelsProvider, bool>(
+      (it) => it.model?.currentState.type is FlattenGalleryModelStateType,
     );
     if (canGoBack || isSearchOverlayShown) {
       actions.add(AppBarAction.back);
@@ -44,6 +50,7 @@ class HomeAppBar extends StatelessWidget {
       return actions;
     }
     if (isSearchResultShown) {
+      actions.add(AppBarAction.saveAlbum);
       actions.add(AppBarAction.sort);
       return actions;
     }
@@ -53,7 +60,14 @@ class HomeAppBar extends StatelessWidget {
       actions.add(AppBarAction.sort);
       actions.add(AppBarAction.backdrop);
     }
+    if (isFlattenResultShown) return actions;
 
+    bool isSingleAlbumView = context.select<TabModelsProvider, bool>(
+      (it) => it.model?.isAlbumView == true && it.model?.stackPosition == 1,
+    );
+    if (isSingleAlbumView) {
+      actions.add(AppBarAction.deleteAlbum);
+    }
     bool isAlbumView = context.select<TabModelsProvider, bool>((it) => it.model?.isAlbumView == true);
     if (isAlbumView) return actions;
 
@@ -131,6 +145,12 @@ class _HomeAppBarInner extends StatelessWidget {
     }
     if (state.actions.contains(AppBarAction.flatten)) {
       actions.add(const FlattenDirButton());
+    }
+    if (state.actions.contains(AppBarAction.saveAlbum)) {
+      actions.add(const SaveAlbumButton());
+    }
+    if (state.actions.contains(AppBarAction.deleteAlbum)) {
+      actions.add(const DeleteAlbumButton());
     }
     if (state.actions.contains(AppBarAction.sort)) {
       actions.add(const SortOptionWidget());

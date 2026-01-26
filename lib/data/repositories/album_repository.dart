@@ -1,5 +1,7 @@
 import 'package:pigallery2_android/data/backend/api_service.dart';
 import 'package:pigallery2_android/data/backend/models/album.dart';
+import 'package:pigallery2_android/data/backend/models/create_album.dart';
+import 'package:pigallery2_android/data/backend/models/search/search.dart';
 import 'package:pigallery2_android/data/backend/models/directory.dart';
 import 'package:pigallery2_android/domain/models/item.dart';
 import 'package:pigallery2_android/domain/models/metadata.dart';
@@ -28,5 +30,15 @@ class AlbumRepositoryImpl implements AlbumRepository {
   Future<Directory?> getAlbumContent(Album album) async {
     BackendDirectory? result = (await _api.search(album.searchQuery))?.toDirectory(album.name);
     return result?.let((it) => Directory.fromBackend(result));
+  }
+
+  @override
+  Future<void> createAlbum(String name, SearchQueryDTO query) async {
+    await _api.createAlbum(CreateAlbumDto(name: name, searchQuery: query));
+  }
+
+  @override
+  Future<void> deleteAlbum(int id) async {
+    await _api.deleteAlbum(id);
   }
 }

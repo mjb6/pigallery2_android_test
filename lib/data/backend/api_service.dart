@@ -1,5 +1,6 @@
 import 'package:pigallery2_android/data/backend/models/album.dart';
 import 'package:pigallery2_android/data/backend/models/auth/connection_test_result.dart';
+import 'package:pigallery2_android/data/backend/models/create_album.dart';
 import 'package:pigallery2_android/data/backend/models/directory.dart';
 import 'package:pigallery2_android/data/backend/models/search/auto_complete.dart';
 import 'package:pigallery2_android/data/backend/models/search/search.dart';
@@ -12,6 +13,10 @@ abstract interface class ApiService {
   Future<SearchResult?> search(SearchQueryDTO query);
 
   Future<List<AlbumBaseDto>> getAlbums();
+
+  Future<void> createAlbum(CreateAlbumDto album);
+
+  Future<void> deleteAlbum(int id);
 
   Future<List<AutoCompleteItem>> autoComplete(AutoCompleteItem request);
 

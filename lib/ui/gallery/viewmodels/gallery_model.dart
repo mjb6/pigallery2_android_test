@@ -94,7 +94,8 @@ class GalleryModel extends SafeChangeNotifier {
 
   /// Register a new [HomeView] instance.
   void addStack(Directory baseDirectory) {
-    _addStack(GalleryModelState(DirectoryGalleryModelStateType(), baseDirectory, _sortOptionsRepository));
+    final type = baseDirectory is Album ? AlbumGalleryModelStateType() : DirectoryGalleryModelStateType();
+    _addStack(GalleryModelState(type, baseDirectory, _sortOptionsRepository));
     fetch();
   }
 
@@ -113,8 +114,14 @@ class GalleryModel extends SafeChangeNotifier {
   void _updateCurrentState(Directory? result) {
     currentState.isLoading = false;
     if (result != null) {
-      currentState.baseDirectory = result;
-      currentState.sortingKey ??= DirectorySortingKey(result.relativeApiPath);
+      if (currentState.type is AlbumGalleryModelStateType) {
+        if (currentState.baseDirectory is Album) {
+          currentState.sortingKey ??= AlbumSortingKey((currentState.baseDirectory as Album).id);
+        }
+      } else {
+        currentState.baseDirectory = result;
+        currentState.sortingKey ??= DirectorySortingKey(result.relativeApiPath);
+      }
       currentState.sortOption = _sortOptionsRepository.getSortOption(currentState.sortingKey);
       currentState.items = [...result.directories, ...result.media];
     } else {
@@ -168,15 +175,14 @@ class GalleryModel extends SafeChangeNotifier {
     FlattenGalleryModelStateType(:final target) => _cancelableApiRequest(() {
       return _itemRepository.flattenDirectory(target);
     }, isRefresh),
+    AlbumGalleryModelStateType() => _cancelableApiRequest(() {
+      return _albumRepository.getAlbumContent(currentState.baseDirectory as Album);
+    }, isRefresh),
     DirectoryGalleryModelStateType() => _cancelableApiRequest(() {
       if (stackPosition == 0 && isAlbumView) {
         return _albumRepository.getAlbums();
       }
-      Directory? baseDirectory = currentState.baseDirectory;
-      if (baseDirectory is Album) {
-        return _albumRepository.getAlbumContent(baseDirectory);
-      }
-      return _itemRepository.getDirectories(path: baseDirectory?.relativeApiPath);
+      return _itemRepository.getDirectories(path: currentState.baseDirectory?.relativeApiPath);
     }, isRefresh),
     _ => Future.value(),
   };

@@ -35,9 +35,9 @@ class ErrorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      child: Ink(
-        color: Colors.black,
+    return SizedBox(
+      width: double.maxFinite,
+      child: Material(
         child: InkResponse(
           radius: 48,
           highlightColor: Colors.transparent,

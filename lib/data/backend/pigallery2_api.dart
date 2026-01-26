@@ -1,9 +1,12 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:pigallery2_android/data/backend/logging_client.dart';
 import 'package:pigallery2_android/data/backend/models/album.dart';
 import 'package:pigallery2_android/data/backend/models/api_response.dart';
 import 'package:pigallery2_android/data/backend/models/auth/login_credentials.dart';
+import 'package:pigallery2_android/data/backend/models/create_album.dart';
 import 'package:pigallery2_android/data/backend/models/search/auto_complete.dart';
 import 'package:pigallery2_android/data/backend/models/search/search.dart';
 import 'package:pigallery2_android/data/storage/models/session_data.dart';
@@ -37,10 +40,13 @@ class PiGallery2Api {
 
   String _getAlbumsEndpoint(String serverUrl) => "${_getBaseEndpoint(serverUrl)}/albums";
 
+  String _deleteAlbumsEndpoint(String serverUrl, int albumId) => "${_getBaseEndpoint(serverUrl)}/albums/$albumId";
+
+  String _getCreateAlbumsEndpoint(String serverUrl) => "${_getBaseEndpoint(serverUrl)}/albums/saved-searches";
+
   String _getAutoCompleteEndpoint(String serverUrl) => "${_getBaseEndpoint(serverUrl)}/autocomplete/";
 
-  final _client = http.Client();
-
+  final _client = kDebugMode ? LoggingClient(http.Client()) : http.Client();
   final ServerRepository _serverRepository;
 
   PiGallery2Api(this._serverRepository);
@@ -58,6 +64,7 @@ class PiGallery2Api {
       headers['Cookie'] = sessionData.cookies;
       sessionData.csrfToken?.let((it) => headers['CSRF-Token'] = it);
     }
+    headers["Content-Type"] = "application/json";
     return headers;
   }
 
@@ -163,6 +170,54 @@ class PiGallery2Api {
     SessionData? sessionData,
   }) async {
     return await _runCatching(() => _getAlbums(serverUrl, sessionData));
+  }
+
+  Future<ApiResponse<void>> _createAlbum(
+    String serverUrl,
+    CreateAlbumDto album, {
+    SessionData? sessionData,
+  }) async {
+    Uri uri = Uri.parse(_getCreateAlbumsEndpoint(serverUrl));
+
+    http.Response response = await _client.put(uri, headers: getHeaders(sessionData), body: jsonEncode(album));
+    Map<String, dynamic> result = json.decode(response.body);
+    if (result["error"] == null) {
+      return ApiResponse(code: response.statusCode);
+    } else {
+      return ApiResponse(error: result["error"].toString(), code: response.statusCode);
+    }
+  }
+
+  Future<ApiResponse<void>> createAlbum({
+    required String serverUrl,
+    required CreateAlbumDto album,
+    SessionData? sessionData,
+  }) async {
+    return await _runCatching(() => _createAlbum(serverUrl, album, sessionData: sessionData));
+  }
+
+  Future<ApiResponse<void>> _deleteAlbum(
+    String serverUrl,
+    int id, {
+    SessionData? sessionData,
+  }) async {
+    Uri uri = Uri.parse(_deleteAlbumsEndpoint(serverUrl, id));
+
+    http.Response response = await _client.delete(uri, headers: getHeaders(sessionData));
+    Map<String, dynamic> result = json.decode(response.body);
+    if (result["error"] == null) {
+      return ApiResponse(code: response.statusCode);
+    } else {
+      return ApiResponse(error: result["error"].toString(), code: response.statusCode);
+    }
+  }
+
+  Future<ApiResponse<void>> deleteAlbum({
+    required String serverUrl,
+    required int id,
+    SessionData? sessionData,
+  }) async {
+    return await _runCatching(() => _deleteAlbum(serverUrl, id, sessionData: sessionData));
   }
 
   Future<ApiResponse<List<AutoCompleteItem>>> _autoComplete(

@@ -46,3 +46,12 @@ class DirectorySortingKey implements SortingKey {
   @override
   String get key => _key;
 }
+
+class AlbumSortingKey implements SortingKey {
+  final int id;
+
+  AlbumSortingKey(this.id);
+
+  @override
+  String get key => ".Album.$id";
+}

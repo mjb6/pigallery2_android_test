@@ -25,6 +25,8 @@ class FlattenGalleryModelStateType extends GalleryModelStateType {
 
 class TopPicksGalleryModelStateType extends GalleryModelStateType {}
 
+class AlbumGalleryModelStateType extends GalleryModelStateType {}
+
 /// Represents the data to be displayed for the current [HomeView].
 class GalleryModelState {
   /// [Directory] received from the backend.
@@ -76,6 +78,9 @@ class GalleryModelState {
     switch (type) {
       case DirectoryGalleryModelStateType():
         sortingKey = baseDirectory?.let((it) => DirectorySortingKey(it.relativeApiPath));
+      case AlbumGalleryModelStateType():
+        _title = baseDirectory?.name;
+        sortingKey = baseDirectory?.let((it) => AlbumSortingKey((it as Album).id));
       case SearchGalleryModelStateType(:final query):
         _title = SearchQueryParser().stringify(query);
         isSearching = true;

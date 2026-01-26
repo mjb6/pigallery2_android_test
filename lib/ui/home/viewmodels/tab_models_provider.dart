@@ -67,5 +67,8 @@ class TabModelsProvider extends SafeChangeNotifier {
       }
       await model.fetch();
     }
+    for (var model in _searchModels) {
+      model.stopSearch();
+    }
   }
 }

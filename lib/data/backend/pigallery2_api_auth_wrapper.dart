@@ -1,6 +1,7 @@
 import 'package:pigallery2_android/data/backend/api_service.dart';
 import 'package:pigallery2_android/data/backend/models/album.dart';
 import 'package:pigallery2_android/data/backend/models/api_response.dart';
+import 'package:pigallery2_android/data/backend/models/create_album.dart';
 import 'package:pigallery2_android/data/backend/models/search/auto_complete.dart';
 import 'package:pigallery2_android/data/backend/models/search/search.dart';
 import 'package:pigallery2_android/data/backend/models/search/search_result.dart';
@@ -116,6 +117,22 @@ class PiGallery2ApiAuthWrapper implements ApiService {
           _api.autoComplete(serverUrl: url, request: request, sessionData: sessionData),
     );
     return result ?? [];
+  }
+  
+  @override
+  Future<void> createAlbum(CreateAlbumDto album) async {
+    await _requestWithAuth(
+      (String url, SessionData? sessionData) =>
+          _api.createAlbum(serverUrl: url, album: album, sessionData: sessionData),
+    );
+  }
+  
+  @override
+  Future<void> deleteAlbum(int id) async {
+    await _requestWithAuth(
+      (String url, SessionData? sessionData) =>
+          _api.deleteAlbum(serverUrl: url, id: id, sessionData: sessionData),
+    );
   }
 
   @override
