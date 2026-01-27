@@ -42,7 +42,7 @@ dependencies:
   # not upgrading yet since the start of the audio playback causes lag & the first frame is delayed
   # - possibly due to SurfaceProducer migration (& android-surface-size 1x1 + resizing)
   media_kit_video: 1.2.4
-  media_kit_libs_android_video: 1.3.7
+  media_kit_libs_android_video: 1.3.8
   media_kit_libs_linux: ^1.2.1
 
   backdrop:
