@@ -24,7 +24,10 @@ class SearchAppBarTitle extends StatelessWidget {
         decoration: const InputDecoration(
           hintText: 'Search',
           border: InputBorder.none,
+          isDense: true,
+          contentPadding: EdgeInsets.zero,
         ),
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
         onTap: () {
           vm.showOverlay = true;
         },

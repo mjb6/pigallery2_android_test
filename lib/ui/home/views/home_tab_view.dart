@@ -66,7 +66,7 @@ class _HomeTabViewState extends State<HomeTabView> {
 /// [ScrollPhysics] with a faster animation and drag threshold.
 /// See https://github.com/flutter/flutter/issues/55103#issuecomment-747059541
 class FasterPageViewScrollPhysics extends ScrollPhysics {
-  static const double _dragThreshold = 20.0;
+  static const double _dragThreshold = 30.0;
 
   const FasterPageViewScrollPhysics({super.parent});
 
